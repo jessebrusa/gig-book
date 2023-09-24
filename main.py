@@ -13,7 +13,7 @@ split_break_date_item, edit_data_method, delete_data_method, edit_address_method
 edit_mass_email_method, edit_data_method_break, set_list_form_submit, split_break_dates, \
 wtf_edit_data_market, marketing_list_form_submit, wtf_edit_method, wtf_edit_ckeditor, feedback_dates_values, \
 edit_data_date_method, testimonial_dates_values, wtf_edit_testimonial, generate_hash_salt, bible_url, params, \
-send_email_with_attachment, attachment_url
+send_email_with_attachment, attachment_url, check_for_data_return_last
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean
@@ -45,7 +45,7 @@ class DataBase(db.Model):
     __tablename__ = 'database'
     id = db.Column(db.Integer, primary_key=True)
     facility = db.Column(db.String(250))
-    contact_person = db.Column(db.String(250))
+    
     town = db.Column(db.String(250))
     street = db.Column(db.String(250))
     state = db.Column(db.String(250))
@@ -66,6 +66,16 @@ class DataBase(db.Model):
     comments_list = db.Column(db.Text)
     date_marketing_list = db.Column(db.String(250))
 
+    contact_person = db.relationship('ContactPerson')
+
+
+class ContactPerson(db.Model):
+    __tablename__ = 'contact_person_table'
+    id = db.Column(db.Integer, primary_key=True)
+    contact_person = db.Column(db.String(250))
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -75,8 +85,9 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(250), nullable=False)
     password = db.Column(db.String(250), nullable=False)
 
-# with app.app_context():
-#     db.create_all()
+
+with app.app_context():
+    db.create_all()
 
 
 @login_manager.user_loader
@@ -98,7 +109,7 @@ def admin_only(f):
 
 
 @app.route('/', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def home():
     facilities = DataBase.query.all()
     
@@ -107,7 +118,10 @@ def home():
     facility_names = [last_item(split_list(facility.facility)) for facility in facilities]
     length = len(facility_names)
 
-    facility_contacts = [last_item(split_list(facility.contact_person)) for facility in facilities]
+    facility_contacts = [
+    check_for_data_return_last(facility.contact_person).contact_person if facility.contact_person else None
+    for facility in facilities
+    ]
 
     facility_id = [facility.id for facility in facilities]
 
@@ -127,14 +141,23 @@ def home():
     
             facilities = sorted(facilities, key=lambda x: x.facility)
 
+            facility_contacts = [
+                check_for_data_return_last(facility.contact_person).contact_person.lower() for facility in facilities]
+            
+            print(facility_contacts)
+            print(request_name.lower())
+
             facilities = [facility for facility in facilities if request_name.lower() in facility.facility.lower() 
                           or request_name.lower() in facility.town.lower()
-                          or request_name.lower() in facility.contact_person.split('~')[-1].lower()]
+                          or request_name.lower() in facility_contacts]
 
             facility_names = [last_item(split_list(facility.facility)) for facility in facilities]
             length = len(facility_names)
 
-            facility_contacts = [last_item(split_list(facility.contact_person)) for facility in facilities]
+            facility_contacts = [
+                check_for_data_return_last(facility.contact_person).contact_person if facility.contact_person else None
+                for facility in facilities
+                ]
 
             facility_id = [facility.id for facility in facilities]
 
@@ -151,7 +174,10 @@ def home():
                 facility_names = [last_item(split_list(facility.facility)) for facility in facilities]
                 length = len(facility_names)
 
-                facility_contacts = [last_item(split_list(facility.contact_person)) for facility in facilities]
+                facility_contacts = [
+                check_for_data_return_last(facility.contact_person).contact_person if facility.contact_person else None
+                for facility in facilities
+                ]
 
                 facility_id = [facility.id for facility in facilities]
 
@@ -169,7 +195,10 @@ def home():
                 facility_names = [last_item(split_list(facility.facility)) for facility in facilities]
                 length = len(facility_names)
 
-                facility_contacts = [last_item(split_list(facility.contact_person)) for facility in facilities]
+                facility_contacts = [
+                    check_for_data_return_last(facility.contact_person).contact_person if facility.contact_person else None
+                    for facility in facilities
+                    ]
 
                 facility_id = [facility.id for facility in facilities]
 
@@ -184,7 +213,7 @@ def home():
 
 
 @app.route('/form', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def form():
     form = AddressBookForm()
 
@@ -333,7 +362,6 @@ def form():
 
         new_entry = DataBase(
             facility = form.facility.data,
-            contact_person = form.contact_person.data,
             state = form.state.data,
             town = form.town.data,
             street = form.street.data,
@@ -358,17 +386,29 @@ def form():
         db.session.add(new_entry)
         db.session.commit()
 
+        new_contact = ContactPerson(
+            contact_person = form.contact_person.data,
+            data_base_id = new_entry.id,
+        )
+
+        db.session.add(new_contact)
+        db.session.commit()
+
+
+
         return redirect(url_for('facility_page', id=new_entry.id))
 
     return render_template('form.html', form=form)
 
 
 @app.route('/facility/<int:id>', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def facility_page(id):
     facility = DataBase.query.filter_by(id=id).first()
 
-    contact_person = last_item(split_list(facility.contact_person))
+    contact_person = check_for_data_return_last(facility.contact_person)
+    if contact_person:
+        contact_person = contact_person.contact_person
 
     phone_number = last_item(split_list(facility.phone_number))
     phone_ext = ext_phone(phone_number)
@@ -416,7 +456,7 @@ def facility_page(id):
 
 
 @app.route('/add/<int:id>/<field>', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def add_data(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -441,17 +481,25 @@ def add_data(id, field):
 
 
 @app.route('/commit-add/<int:id>/<field>', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def commit_add_data(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
     
     if request.method == 'POST':       
         
-        new_contact = add_data_method('contact_person', field, 
-                                      'contact_person_', facility.contact_person)
-        if new_contact:
-            facility.contact_person = new_contact
+        # new_contact = add_data_method('contact_person', field, 
+        #                               'contact_person_', facility.contact_person)
+        # if new_contact:
+        #     facility.contact_person = new_contact
+
+        if field == 'contact_person':
+            new_contact = ContactPerson(
+                contact_person = request.form.get('contact_person_'),
+                data_base_id = id,
+            )
+            db.session.add(new_contact)
+            db.session.commit()
         
 
         image_file_string_type = image_url('location_img', field, 'location_img_new', facility.location_img_url)
@@ -531,14 +579,18 @@ def commit_add_data(id, field):
 
 
 @app.route('/edit-field/<int:id>/<field>', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def edit_field(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
 
     venue = last_item(compare_field_return_data('facility', field, facility.facility))
-    contacts = compare_field_return_data('contact_person', field, facility.contact_person)
-    contacts_len = list_length(contacts)
+    # contacts = compare_field_return_data('contact_person', field, facility.contact_person)
+
+    if field == 'contact_person':
+        contacts = facility.contact_person
+    else:
+        contacts = None
     distance_time = last_item(compare_field_return_data('distance_time', field, str(facility.distance_time)))
     location_img = compare_field_return_data('location_img', field, facility.location_img_url)
     address = compare_field_address('address', field, facility.street, facility.town,
@@ -596,7 +648,7 @@ def edit_field(id, field):
 
 
 
-    return render_template('edit-field.html', id=id, facility=facility, form=form, field=field, venue=venue, contacts=contacts, contacts_len=contacts_len,
+    return render_template('edit-field.html', id=id, facility=facility, form=form, field=field, venue=venue, contacts=contacts,
                            distance_time=distance_time, venue_types_len=venue_types_len, performance_types_len=performance_types_len, duration_list_len=duration_list_len,
                            phone_numbers=phone_numbers, location_img=location_img, address=address, emails=emails, mass_email=mass_email, days_times=days_times,
                            days_times_len=days_times_len, venue_types=venue_types, venue_type_list=venue_type_list, performance_types=performance_types,
@@ -609,7 +661,7 @@ def edit_field(id, field):
 
 
 @app.route('/commit-edit/<int:id>/<field>', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def commit_edit(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -717,7 +769,7 @@ def commit_edit(id, field):
 
 
 @app.route('/wtformedit/<int:id>/<field>/<data>', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def wtform_edit(id, field, data):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -757,7 +809,7 @@ def wtform_edit(id, field, data):
 
 
 @app.route('/wtformcommit/<int:id>/<field>/<data>', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def wtform_commit(id, field, data):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -793,11 +845,11 @@ def wtform_commit(id, field, data):
 
 
 @app.route('/previous-contact-data/<int:id>')
-@admin_only
+# @admin_only
 def previous_contact(id):
     facility = DataBase.query.filter_by(id=id).first()
 
-    contact_list = split_list(facility.contact_person)
+    contact_list = [contact.contact_person for contact in facility.contact_person]
 
     phone_list = split_list(facility.phone_number)
 
@@ -807,20 +859,25 @@ def previous_contact(id):
     return render_template('previous.html', id=id, contact_list = contact_list, phone_list=phone_list, email_list=email_list)
 
 
-@app.route('/delete/<int:id>/<field>/<data>', methods=['GET', 'POST'])
-@admin_only
+@app.route('/delete/<int:id>/<field>/<int:data>', methods=['GET', 'POST'])
+# @admin_only
 def delete_data(id, field, data):
     facility = DataBase.query.filter_by(id=id).first()
     data = data
 
 
-    delete_contact = delete_data_method('contact_person', field, 
-                                        facility.contact_person, data, True)
-    if delete_contact:
-        if delete_contact == 'redirect':
-            return redirect(url_for('facility_page', id=id))  
-        else:
-            facility.contact_person = delete_contact
+    # delete_contact = delete_data_method('contact_person', field, 
+    #                                     facility.contact_person, data, True)
+    # if delete_contact:
+    #     if delete_contact == 'redirect':
+    #         return redirect(url_for('facility_page', id=id))  
+    #     else:
+    #         facility.contact_person = delete_contact
+
+    if field == 'contact_person':
+        delete_contact = ContactPerson.query.filter_by(id=data).first()
+        db.session.delete(delete_contact)
+        db.session.commit()
 
 
 
@@ -963,7 +1020,7 @@ def delete_data(id, field, data):
 
 
 @app.route('/delete-contact/<int:id>', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def delete_contact(id):
     facility = DataBase.query.filter_by(id=id).first()
 
@@ -1030,7 +1087,7 @@ def register_page():
 
 
 @app.route('/mass-email', methods=['GET', 'POST'])
-@admin_only
+# @admin_only
 def mass_email_page():
     mass_email_form = MassEmailForm()
 

@@ -19,12 +19,12 @@
                     </div>
                 {% endif %}
                 {% if contacts %}
-                    {% for num in range(contacts_len) %}
+                    {% for contact in contacts %}
                         <div class="formRow contactDelete">
-                            <label class="leftItem">{{ contacts[num] }}:</label>
-                            <input type="text" class="inputField" name="contact_person_{{ num }}">
+                            <label class="leftItem">{{ contact.contact_person }}:</label>
+                            <input type="text" class="inputField" name="contact.contact_person">
                         </div>
-                        <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='contact_person', data=num) }}">DELETE</a>
+                        <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='contact_person', data=contact.id) }}">DELETE</a>
                     {% endfor %}
                 {% endif %}
                 {% if distance_time %}

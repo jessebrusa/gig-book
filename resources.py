@@ -11,6 +11,16 @@ import math
 import os
 
 
+
+def check_for_data_return_last(facility_object):
+    if facility_object:
+        return facility_object[-1]
+    else:
+        return None
+
+
+
+
 def split_list(column):
     if column == None:
         return None
