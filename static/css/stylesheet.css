@@ -1,0 +1,913 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+
+/* * {
+    border: 2px solid red;
+} */
+
+.navBarContainer {
+    width: 95%;
+    margin: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #EEEDE7;
+    border-radius: 25px;
+    padding: 20px;
+    border: 10px solid #E7D2CC;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 30px;
+}
+
+.navBarContainer a {
+    text-decoration: none;
+    color: black;
+    background-color: #E7D2CC;
+    padding: 10px;
+    border-radius: 15px;
+    display: flex;
+}
+
+.navBarContainer a:hover {
+    transform: scale(1.15);
+}
+
+.navBarContainer a:active {
+    transform: scale(.9);
+}
+
+.rightNavItems {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 25px;
+}
+
+body {
+    background-color: #868B8E;
+    font-family: 'Roboto', sans-serif;
+    box-sizing: border-box;
+}
+
+.header {
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    
+}
+
+.header a {
+    text-decoration: none;
+    color: black;
+}
+
+.margin {
+    margin-left: 80px;
+}
+
+.top-info {
+    width: 60%;
+    background-color: #E7D2CC;
+    text-align: center;
+    border-radius: 50px;
+    padding: 20px;
+}
+
+.top-info h1 {
+    font-size: 80px;
+    font-weight: 700px;
+    margin: 5px;
+    margin-left: 80px;
+}
+
+.top-info h1:hover + .editAddBtn{
+    opacity: 100%;
+}
+
+.editAddContainer:hover + .editAddBtn {
+    opacity: 100%;
+}
+
+.top-info h2 {
+    font-size: 40px;
+    margin-left: 80px;
+}
+
+.top-info h3 {
+    margin-left: 110px;
+}
+
+h3:hover + .editAddBtn {
+    opacity: 100%;
+}
+
+.editAddContainer .emailMassEmail {
+    display: flex;
+}
+
+.imgFacilityPageContainer:hover + .editAddBtn {
+    opacity: 100%;
+    background-color: #E7D2CC;
+    border-radius: 10px;
+    z-index: 5;
+}
+
+h2:hover + .editAddBtn {
+    opacity: 100%;
+}
+
+.distanceTime {
+    margin-right: 40px;
+}
+
+h1 {
+    font-size: 80px;
+    text-align: center;
+}
+
+.marginUpNeg {
+    margin-top: -80px;
+}
+
+.contactH1 {
+    margin-bottom: 50px;
+}
+
+.editAddContainerImg {
+    width: 30%;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.imgFacilityPageContainer {
+    width: 100%;
+    background-color: #E7D2CC;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50px;
+    padding: 25px;
+    margin-bottom: 85px;
+}
+
+.imgFacilityPageContainer img {
+    width: 90%;
+    height: auto;
+    max-height: 240px;
+    max-width: fit-content;
+}
+
+.img-location > img {
+    padding: 10px;
+}
+
+.formContainerColumn {
+    display: flex;
+    flex-direction: column;
+    width: 65%;
+    min-width: 475px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #EEEDE7;
+    border-radius: 20px;
+    border: 10px solid #E7D2CC;
+}
+
+.formContainer {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.formRow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 5px;
+}
+
+.leftItem {
+    width: 254px;
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    height: auto;
+    text-align: right;
+    font-size: 25px;
+}
+
+.inputField {
+    width: 400px;
+    height: 33px;
+    font-size: 25px;
+}
+
+
+.dropdownOption {
+    height: 37px;
+    font-size: 25px;
+    width: 408px;
+}
+
+.venueOption {
+    font-size: 22px;
+}
+
+.submitButton {
+    width: 200px;
+    font-size: 30px;
+    padding: 10px;
+    margin: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+}
+
+.chooseFile {
+    width: 404px;
+    font-size: 25px;
+}
+
+.booleanContainer {
+    width: 404px;
+}
+
+.booleanField {
+    display: flex;
+    justify-content: center;
+    transform: scale(2);
+}
+
+.setList {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    background-color: #E7D2CC;
+    border: 5px solid #B9B7BD;
+    border-radius: 20px;
+    width: 90%;
+    height: 400px;
+    flex-direction: column;
+}
+
+.setListRow {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    flex-wrap: wrap;
+    padding: 10px;
+}
+
+.setListColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+.setListColumn > label {
+    font-size: 25px;
+}
+
+h2 {
+    font-size: 40px;
+    margin: 10px;
+}
+
+.dateCalendar {
+    width: 400px;
+    font-size: 25px;
+}
+
+.itemsDayTime {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 400px;
+}
+
+.dayItem {
+    width: 250px;
+}
+
+.timeItem {
+    width: 40px;
+    font-size: 25px;
+}
+
+.dayTime {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 50px;
+}
+
+.ckEditor {
+    width: 225px;
+    height: 200px;
+}
+
+.libraryItemsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: center;
+    margin: 10px;
+}
+
+.libraryFacilityContainer {
+    min-width: 450px;
+    height: 600px;
+    background-color: #E7D2CC;
+    text-decoration: none;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 20px;
+    transition: transform 0.1s, box-shadow 0.1s;
+    cursor: pointer;
+    outline: 8px solid #EEEDE7;
+}
+
+.libraryFacilityContainer:hover {
+    transform: scale(1.1);
+    box-shadow: -10px 0px 10px rgba(0, 0, 0, 0.3);
+}
+
+.libraryFacilityContainer a {
+    text-decoration: none;
+    color: black;
+    height: 400px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.row2Container {
+    width: 90%;
+    background-color: #E7D2CC;
+    margin-top: 35px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    padding: 20px;
+    border-radius: 20px;
+} 
+
+.row3 {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    margin: 50px;
+    margin-left: 0%;
+    gap: 20px;
+}
+
+.row3Div {
+    width: 30%;
+    min-width: 300px;
+    min-height: 500px;
+    background-color: #E7D2CC;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.row3Div:hover  .editAddBtn {
+    opacity: 1;
+}
+
+.row4 {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    margin: 50px;
+    margin-left: 0%;
+}
+
+.row4Container {
+    width: 30%;
+    height: 500px;
+    background-color: #E7D2CC;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.row4Container:hover .editAddBtn {
+    opacity: 1;
+}
+
+.row4Set {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.centerBtn {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.row4Marketing {
+    width: 63%;
+    height: 500px;
+    background-color: #E7D2CC;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.row4Marketing:hover .editAddBtn {
+    opacity: 1;
+}
+
+.largeBox {
+    width: 80%;
+    background-color: #E7D2CC;
+    border-radius: 30px;
+    margin: 20px;
+    text-align: center;
+    font-size: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.largeBox:hover .editAddBtn {
+    opacity: 1;
+}
+
+.editAddContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.editAddContainer .emailMassEmail {
+    display: flex;
+    align-items: center;
+}
+
+.editAddContainerImg {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: center;
+    align-items: center;
+    width: 30%; 
+}
+
+.editAddContainer h1 {
+    margin-right: 20px;
+}
+
+.editAddBtn {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    gap: 5px;
+    transition: opacity 0.5s ease;
+    background-color: #E7D2CC;
+    border-radius: 10px;
+    padding: 10px;
+    padding-left: 0%;
+    padding-right: 0%;
+    z-index: 5;
+    width: 80px;
+}
+
+.editAddBtn:hover {
+    opacity: 100%;
+}
+
+.high-opacity {
+    opacity: 1;
+}
+
+.editAddBtn img {
+    width: 30px;
+    height: 30px;
+    margin: 0%;
+}
+ 
+.editAddContainerImg .editAddBtn:hover {
+    background-color: #E7D2CC;
+    border-radius: 10px;
+}
+
+.editAddBtn img:hover {
+    transform: scale(1.15);
+}
+
+.editAddBtn img:active {
+    transform: scale(.9);
+}
+
+.venueContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.venueH2 {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 30px;
+    font-weight: 800px;
+}
+
+.venueItems {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.venueItems h3 {
+    font-size: 25px;
+    text-align: center;
+}
+
+.comments {
+    margin: 0px;
+    font-size: 30px;
+}
+
+.commentsContainer {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+h4 {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.h4Container {
+    margin: 0;
+}
+
+.h4Add {
+    padding: 0;
+    margin: 0;
+    height: 30px;
+    width: 30px;
+    margin-top: -10px;
+}
+
+.top-info:hover h4 {
+    opacity: 1;
+}
+
+
+.delete {
+    font-size: 25px;
+    background-color: darkred;
+    color: #EEEDE7;
+    border: #868B8E;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px;
+    text-decoration: none;
+    width: 90px;
+    text-align: center;
+}
+
+.delete:hover {
+    transform: scale(1.2);
+}
+
+.delete:active {
+    transform: scale(.9);
+}
+
+.editBtn {
+    font-size: 25px;
+    background-color: darkorange;
+    color: #EEEDE7;
+    border: #868B8E;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px;
+    text-decoration: none;
+    width: 90px;
+    text-align: center;
+}
+
+.editBtn:hover {
+    transform: scale(1.2);
+}
+
+.editBtn:active {
+    transform: scale(.9);
+}
+
+.gigs {
+    font-size: 150px;
+    color:black;
+    font-weight: 400px;
+    margin: 20px;
+    background-color: #EEEDE7;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 20px;
+    padding-right: 40px;
+    padding-left: 40px;
+    border-radius: 20px;
+    outline: 10px solid #E7D2CC;
+}
+
+.editGigs {
+    font-size: 80px;
+}
+
+.returnContainer {
+    margin: 40px 60px -20px 60px;
+}
+
+.returnContainer a {
+    text-decoration: none;
+    color: #EEEDE7;
+    background-color: #868B8E;
+    border-radius: 10px;
+    padding: 20px 60px;
+    font-size: 20px;
+}
+
+.libraryName {
+    font-size: 60px;
+}
+
+.libraryContact {
+    font-size: 28px;
+}
+
+h2 {
+    text-align: center;
+    font-size: 35px;
+}
+
+h3 {
+    font-size: 30px;
+}
+
+h4 {
+    font-size: 30px;
+}
+
+p {
+    font-size: 30px;
+}
+
+.venueMargin {
+    margin: -15px;
+}
+
+.venueHeading {
+    font-size: 40px;
+}
+
+.marketDateContainer {
+    display: flex;
+}
+
+.h4Container a {
+    list-style: none;
+    text-decoration: none;
+    color: black;
+}
+
+.marketDateItems {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 0px;
+    margin-bottom: -30px;
+    border: solid 5px #B9B7BD;
+    border-radius: 10px;
+}
+
+.linkString {
+    color: black;
+    text-decoration: none;
+}
+
+.dateCenter {
+    font-size: 30px;
+}
+
+.ckEditorBox {
+    border: 5px solid #868B8E;
+    border-radius: 10px;
+    background-color: #EEEDE7;
+    width: 50%;
+}
+
+.testimonialBox {
+    border: 5px solid #868B8E;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 20px;
+}
+
+.indexContainer {
+    display: flex;
+    align-items: center;
+}
+
+.indexLeftContainer {
+    width: 590px;
+    margin: 20px;
+    border: 5px solid #B9B7BD;
+    border-radius: 10px;
+    background-color: #E7D2CC;
+    padding: 10px;
+}
+
+.searchContainer {
+    min-width: 500px;
+    font-size: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 50px;
+    background-color: #E7D2CC;
+    padding: 15px;
+    border: 10px solid #B9B7BD;
+    border-radius: 10px;
+    height: 175px;
+}
+
+
+.searchInputField {
+    font-size: 25px;
+}
+
+.searchRadio {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.radioClick {
+    scale: 2;
+}
+
+.searchSubmit {
+    margin: 10px;
+}
+
+.bibleP {
+    padding: 5px;
+}
+
+
+.marginBottomTopLogin {
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.loginInvalid {
+    color: red;
+    text-align: center;
+}
+
+.previousList {
+    display: flex;
+    justify-content: center;
+}
+
+.phone a {
+    text-decoration: none;
+    color: black;
+}
+
+.emailMassEmail a {
+    text-decoration: none;
+    color: black;
+}
+
+.importantDelete {
+    margin: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: darkred;
+    text-decoration: none;
+    width: 1000px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    padding: 25px;
+    border-radius: 20px;
+}
+
+.importantDelete a {
+    text-decoration: none;
+    color: white;
+}
+
+.massEmail {
+    margin-top: 7px;
+    margin-bottom: 7px;
+}
+
+.textArea {
+    font-size: 20px;
+    width: 400px;
+    height: 200px;
+}
+
+@media only screen and (max-width: 1200px) {
+    .top-info {
+        width: 90%;
+    }
+
+    .imgFacilityPageContainer {
+        display: none;
+    }
+
+    .editAddContainerImg {
+        display: none;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    h3 {
+        font-size: 20px;
+    }
+
+    h4 {
+        font-size: 20px;
+    }
+
+    p {
+        font-size: 20px;
+    }
+
+    .editAddBtn {
+        opacity: 1;
+    }
+
+    .navBarContainer {
+        width: 80%;
+    }
+
+    .navBarContainer a {
+        font-size: 20px;
+    }
+
+  }

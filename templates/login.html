@@ -1,0 +1,25 @@
+{% include 'header.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<body>
+    <form method="POST" action="{{ url_for('login_page') }}">
+        <div class="formContainerColumn">
+            <h1 class="contactH1 marginBottomTopLogin">Login</h1>
+            <div class="formRow marginBottomTopLogin">
+                <label class="leftItem">Email:</label>
+                {{ form.email(class_='inputField') }}
+            </div>
+            <div class="formRow marginBottomTopLogin">
+                <label class="leftItem">Password:</label>
+                {{ form.password(class_='inputField') }}
+            </div>
+            {{ form.submit(class_='submitButton marginBottomTopLogin') }} 
+            {% if email_invalid %}
+                <h3 class="loginInvalid">Email Does Not Exist</h3>
+            {% endif %}
+            {% if password_invalid %}
+                <h3 class="loginInvalid">Password is incorrect</h3>
+            {% endif %}
+        </div>
+    </form>
+</body>

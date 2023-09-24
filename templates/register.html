@@ -1,0 +1,27 @@
+{% include 'header.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<body>
+    <form method="POST" action="{{ url_for('register_page') }}">
+        <div class="formContainerColumn">
+            <h1 class="contactH1 marginBottomTopLogin">Register</h1>
+            <div class="formRow marginBottomTopLogin">
+                <label class="leftItem">First Name:</label>
+                {{ form.f_name(class_='inputField') }}
+            </div>
+            <div class="formRow marginBottomTopLogin">
+                <label class="leftItem">Last Name:</label>
+                {{ form.l_name(class_='inputField') }}
+            </div>
+            <div class="formRow marginBottomTopLogin">
+                <label class="leftItem">Email:</label>
+                {{ form.email(class_='inputField') }}
+            </div>
+            <div class="formRow marginBottomTopLogin">
+                <label class="leftItem">Password:</label>
+                {{ form.register_password(class_='inputField') }}
+            </div>
+            {{ form.submit(class_='submitButton marginBottomTopLogin') }} 
+        </div>
+    </form>
+</body>

@@ -1,0 +1,327 @@
+{% include "header.html" %}
+<body>
+    <div class="header">
+        <div class="top-info" >
+            <div class="editAddContainer">
+                <h1>{{ facility.facility }}</h1>
+                <div class="editAddBtn">
+                    <a href="{{ url_for('edit_field', id=facility.id, field='facility') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                </div>
+            </div>
+            <div class="editAddContainer">
+                <a href="{{ url_for('previous_contact', id=id) }}"><h2>{{ contact_person }}</h2></a>
+                <div class="editAddBtn">
+                    <a href="{{ url_for('edit_field', id=facility.id, field='contact_person') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                    <a href="{{ url_for('add_data', id=facility.id, field='contact_person') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+            </div>
+            <div class="editAddContainer distanceTime">
+                <h3>Distance Time: {{ facility.distance_time }} (mins)</h3>
+                <div class="editAddBtn">
+                    <a href="{{ url_for('edit_field', id=facility.id, field='distance_time') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                </div>
+            </div>
+        {% if not facility.location_img_url %}
+            <div class="editAddContainer h4Container">
+                <a href="{{ url_for('add_data', id=facility.id, field='image') }}"><h4>Add Image</h2></a>
+                <div class="editAddBtn h4Add">
+                    <a href="{{ url_for('add_data', id=facility.id, field='image') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add" class="h4Add"></a>
+                </div>
+            </div>
+        {% endif %}
+        </div>
+        {% if facility.location_img_url %}
+            <div class="editAddContainerImg"> 
+                <div class="imgFacilityPageContainer"><img src="{{ facility.location_img_url }}" alt="picture of venue"></div>
+                <div class="editAddBtn">
+                    <a href="{{ url_for('edit_field', id=facility.id, field='location_img') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                </div>
+            </div>
+        {% endif %}   
+    </div>
+    <div class="row2Container">
+        <div class="editAddContainer address">
+            <h2 class="margin">{{ facility.street }}, {{ facility.town }} {{ facility.state }} {{ facility.zip_code }}</h2>
+            <div class="editAddBtn">
+                <a href="{{ url_for('edit_field', id=facility.id, field='address') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+            </div>
+        </div>
+        <div class="editAddContainer phone">
+            {% if phone_ext %}
+                <a href="{{ url_for('previous_contact', id=id) }}"><h2 class="margin">{{ phone_string }} EXT: {{ phone_ext }}</h2></a>
+            {% elif phone_number %}
+                <a href="{{ url_for('previous_contact', id=id) }}"><h2 class="margin">{{ phone_string }}</h2></a>
+            {% endif %}
+            {% if phone_string %}
+                <div class="editAddBtn">
+                    <a href="{{ url_for('edit_field', id=facility.id, field='phone_number') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                    <a href="{{ url_for('add_data', id=facility.id, field='phone_number') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+            {% else %}
+                <a href="{{ url_for('add_data', id=facility.id, field='phone_number') }}" class="linkString"><h2 class="margin linkString">Phone Number</h2></a>
+                <div class="editAddBtn">
+                    <a href="{{ url_for('add_data', id=facility.id, field='phone_number') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+            {% endif %}
+        </div>
+        {% if facility.mass_email and facility.email%}
+            <div class="editAddContainer emailMassEmail">
+                <a href="{{ url_for('previous_contact', id=id) }}"><h2 class="margin">{{ email }} | Mass Email: ✔</h2></a>
+                <div class="editAddBtn">
+                    <a href="{{ url_for('edit_field', id=facility.id, field='email') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                    <a href="{{ url_for('add_data', id=facility.id, field='email') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+            </div>    
+        {% elif facility.email %}
+            <div class="editAddContainer emailMassEmail">
+                <a href="{{ url_for('previous_contact', id=id) }}"><h2 class="margin">{{ email }} | Mass Email: ⅹ</h2></a>
+                <div class="editAddBtn">
+                    <a href="{{ url_for('edit_field', id=facility.id, field='email') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                    <a href="{{ url_for('add_data', id=facility.id, field='email') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+            </div>
+        {% else %}
+            <div class="editAddContainer emailMassEmail">
+                <a href="{{ url_for('add_data', id=facility.id, field='email') }}" class="linkString"><h2 class="margin">Add Email:</h2></a>
+                <div class="editAddBtn">
+                    <a href="{{ url_for('add_data', id=facility.id, field='email') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+            </div>       
+        {% endif %}
+    </div>
+    <div class="row3">
+        <div class="row3Div">
+            {% if day_time_list %}
+                <div class="editAddBtn marginUpNeg">
+                    <a href="{{ url_for('edit_field', id=facility.id, field='preferred_day_time') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                    <a href="{{ url_for('add_data', id=facility.id, field='preferred_day_time') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+                <h2><u>Preferred Day & Time:</u></h2>
+                {% for item in day_time_list %}
+                    {% if item[0] and item[1] %}
+                        <h3>{{ item[0] }}: {{ item[1] }}</h3>
+                    {% elif item[0] %}
+                        <h3>{{ item[0] }}</h3>
+                    {% elif item[1] %}
+                        <h3>{{ item[1] }}</h3>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="editAddBtn marginUpNeg">
+                    <a href="{{ url_for('add_data', id=facility.id, field='preferred_day_time') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div> 
+                <h3>NO Preferred Day or Time</h3>
+            {% endif %}
+        </div>
+        <div class="row3Div">
+            {% if venue_type or performance_type or duration_list %}
+                <div class="editAddBtn marginUpNeg venueMargin">
+                    <a href="{{ url_for('edit_field', id=facility.id, field='venue_type') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                    <a href="{{ url_for('add_data', id=facility.id, field='venue_type') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+            {% else %}
+                <div class="editAddBtn marginUpNeg venueMargin">
+                    <a href="{{ url_for('add_data', id=facility.id, field='venue_type') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+            {% endif %}
+            {% if venue_type %}
+                <div class="venueContainer venueSpace">
+                    <h2 class="venueH2"><u>Venue Type:</u></h2>
+                    <div class="venueItems">
+                        {% for venue in venue_type %}
+                            <h3>{{ venue }}</h2>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <h2 class="venueH2"><u>Venue Type:</u></h2>
+            {% endif %}
+            {% if performance_type %}
+                <div class="venueContainer">
+                    <h2 class="venueH2"><u>Performance Type:</u></h2>
+                    <div class="venueItems">
+                        {% for performance in performance_type %}
+                            <h3>{{ performance }}</h2>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <h2 class="venueH2"><u>Performance Type:</u></h2>
+            {% endif %}
+            {% if facility.duration_list %}
+                <div class="venueContainer">
+                    <h2 class="venueH2"><u>Duration:</u></h2>
+                    <div class="venueItems">
+                        {% for duration in duration_time %}
+                            {% if duration[0] and duration[1] %}
+                                <h3>{{ duration[0] }}hr {{ duration[1] }}min</h2>
+                            {% elif duration[0] %}
+                                <h3>{{ duration[0] }}hr</h3>
+                            {% elif duration[1] %}
+                                <h3>{{ duration[1] }}min</h3>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <h2 class="venueH2"><u>Duration:</u></h2>
+            {% endif %}
+        </div>
+        <div class="row3Div">
+            {% if date_price_list %}
+                <div class="editAddBtn marginUpNeg">
+                    <a href="{{ url_for('edit_field', id=facility.id, field='date_price') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                    <a href="{{ url_for('add_data', id=facility.id, field='date_price') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+            {% else %}
+                <div class="editAddBtn marginUpNeg">
+                    <a href="{{ url_for('add_data', id=facility.id, field='date_price') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                </div>
+            {% endif %}
+            {% if date_price_list %}
+                <h2><u>Date Price:</u></h2>
+                {% for item in date_price_list %}
+                    {% if item[0] and item[1] %}
+                        <h2>{{ item[0] }}: ${{ item[1] }}</h2>
+                    {% elif item[1] %}
+                        <h2>${{ item[1] }}</h2>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <h2><u>Date Price:</u></h2>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row4">
+        <div class="row4Container">
+            <div class="editAddBtn marginUpNeg">
+                <a href="{{ url_for('edit_field', id=facility.id, field='set_list') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+            </div>
+            <h2><u>Setlist</u></h2>
+            <div class="row4Set">  
+                {% if facility.set_list %}
+                    {% for set in set_list %}
+                        <h2>{{ set }}</h2>
+                    {% endfor %}
+                {% endif %}
+            </div>    
+        </div>
+        <div class="row4Marketing">
+            <div class="dateMarketDiv">
+                {% if market_date_list %}
+                    <div class="editAddBtn marginUpNeg centerBtn">
+                        <a href="{{ url_for('edit_field', id=facility.id, field='market_date') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                        <a href="{{ url_for('add_data', id=facility.id, field='market_date') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                    </div>
+                {% else %}
+                    <div class="editAddBtn marginUpNeg centerBtn">
+                        <a href="{{ url_for('add_data', id=facility.id, field='market_date') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                    </div>
+                {% endif %}
+                <div class="marketDateContainer">
+                    {% if market_date_list %}
+                        {% for date_market in market_date_list %}
+                            <div class="marketDateItems">
+                                {% if date_market[0] %}
+                                    <h2><u>{{ date_market[0] }}</u></h2>
+                                {% endif %}
+                                {% if date_market[1] %}
+                                    {% for market in date_market[1] %}
+                                        <h2>{{ market }}</h2>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>  
+                        {% endfor %}
+                    {% else %}
+                        <h2><u>Marketing Material By Date:</u></h2>   
+                    {% endif %}           
+                </div>
+            </div>    
+        </div>
+    </div>
+    {% if facility.comments_list %}
+        <div class="largeBox">
+            <div class="editAddBtn marginUpNeg centerBtn">
+                <a href="{{ url_for('edit_field', id=facility.id, field='comments') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                <a href="{{ url_for('add_data', id=facility.id, field='comments') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+            </div>
+            <h2><u>Comments:</u></h2>
+            {% for num in range(comments_list_length) %}
+                <div class="commentsContainer">
+                    <h3 class="comments">{{ num+1 }}. </h3>
+                    <h3 class="comments">{{ comments_list[num]|safe }}</h3>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="largeBox">
+            <div class="editAddBtn marginUpNeg centerBtn">
+                <a href="{{ url_for('add_data', id=facility.id, field='comments') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+            </div>
+            <h2><u>Add a Comment:</u></h2>
+        </div>
+    {% endif %}
+    {% if feedback_list %}
+        <div class="largeBox">
+            <div class="editAddBtn marginUpNeg centerBtn">
+                <a href="{{ url_for('edit_field', id=facility.id, field='feedback') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                <a href="{{ url_for('add_data', id=facility.id, field='feedback') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+            </div>
+            <h2><u>Feedback:</u></h2>
+            {% for num in range(feedback_list_length) %}
+                {% if feedback_list[num][0] %}
+                    <div class="commentsContainer">
+                        <h3 class="comments">{{ feedback_list[num][0] }}. </h3>
+                        <h3 class="comments">{{ feedback_list[num][1]|safe }}</h3>
+                    </div>
+                {% else %}
+                <div class="commentsContainer">
+                    <h3 class="comments">{{ feedback_list[num][1]|safe }}</h3>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="largeBox">
+            <div class="editAddBtn marginUpNeg centerBtn">
+                <a href="{{ url_for('add_data', id=facility.id, field='feedback') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+            </div>
+            <h2><u>Add Feedback:</u></h2>
+        </div>
+    {% endif %}
+    {% if facility.date_testimonials_list %}
+        <div class="largeBox">
+            <div class="editAddBtn marginUpNeg centerBtn">
+                <a href="{{ url_for('edit_field', id=facility.id, field='testimonial') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                <a href="{{ url_for('add_data', id=facility.id, field='testimonial') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+            </div>
+            {% if testimonial_list %}
+            <h2><u>Testimonial:</u></h2>
+                {% for num in range(testimonial_list_length) %}
+                    {% if testimonial_list[num][0] %}
+                        <div class="commentsContainer">
+                            <h3>{{ testimonial_list[num][0] }}: </h3>
+                            <p>{{ testimonial_list[num][1]|safe }}</p>
+                        </div>
+                    {% else %}
+                        <div class="commentsContainer">
+                            <p>{{ testimonial_list[num][1]|safe }}</p>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="largeBox">
+            <div class="editAddBtn marginUpNeg centerBtn">
+                <a href="{{ url_for('add_data', id=facility.id, field='testimonial') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+            </div>
+            <h2><u>Add a Testimonial:</u></h2>
+        </div>
+    {% endif %}
+    <div class="importantDelete">
+        <a href="{{ url_for('delete_contact', id=id) }}">DELETE CONTACT</a>
+    </div>
+    <script src="../static/javascript/javascript.js"></script>
+</body>
+</html>

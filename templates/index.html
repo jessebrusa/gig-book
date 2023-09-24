@@ -1,0 +1,57 @@
+{% include "header.html" %}
+<body>
+    <div class="indexContainer">
+        <div class="indexLeftContainer">
+            <h2><u>Bible Verse</u></h2>
+            <p class="bibleP">{{ bible_verse|safe }}</p>
+        </div>
+        <h1 class="gigs">Gigs</h1>
+
+        <form method="POST" action="{{ url_for('home') }}">
+        <div class="searchContainer">
+            <div class="searchRadio">
+                <label>Search:</label>
+                <input type="text" name="search_" class="searchInputField">
+            </div>
+            <div class="searchRadio">
+                {% if town_check %}
+                    <label>
+                        Name
+                        <input type="radio" name="option_" value="Name" class="radioClick"> 
+                    </label>
+                    <br>
+                    <label>
+                    Town   
+                    <input type="radio" name="option_" value="Town" class="radioClick" checked>       
+                </label>
+                {% else %}
+                    <label>
+                        Name
+                        <input type="radio" name="option_" value="Name" class="radioClick" checked> 
+                    </label>
+                    <br>
+                    <label>
+                    Town   
+                    <input type="radio" name="option_" value="Town" class="radioClick">       
+                </label>
+                {% endif %} 
+            </div>
+            <input type="submit" name="submit" class="submitButton searchSubmit">
+        </div>
+
+    </div>
+    <div class="libraryItemsContainer">
+        {% for num in range(length) %}
+            <div class="libraryFacilityContainer">
+                <a href="{{ url_for('facility_page', id=facility_id[num]) }}">
+                    <h2 class="libraryName">{{ facility_names[num] }}</h2>
+                    <h3>{{ facility_towns[num] }}</h3>
+                    {% if facility_contacts[num] %}
+                        <h3 class="libraryContact">{{ facility_contacts[num] }}</h3>
+                    {% endif %}
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

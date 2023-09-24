@@ -1,0 +1,40 @@
+{% include 'header.html' %}
+<body>
+    <div class="formContainerColumn">
+        <div class="returnContainer">
+            <a href="{{ url_for('facility_page', id=id) }}">Return</a>
+        </div>
+        <h1>Past Contact Information<br>(Newest To Oldest)</h1>
+        {% if contact_list %}
+            <h2><u>Previous Point People</u></h2>
+            <div class="previousList">
+                <ol>
+                    {% for contact in contact_list %}
+                    <h3><li>{{ contact }}</li></h3>
+                    {% endfor %}
+                </ol>
+            </div>
+        {% endif %}
+        {% if phone_list %}
+            <h2><u>Previous Phone Numbers</u></h2>
+            <div class="previousList">
+                <ol>
+                    {% for phone in phone_list %}
+                        <h3><li>{{ phone }}</li></h3>
+                    {% endfor %}
+                </ol>
+            </div>
+        {% endif %}
+        {% if email_list %}
+            <h2><u>Previous Emails</u></h2>
+            <div class="previousList">
+                <ol>
+                    {% for email in email_list %}
+                        <h3><li>{{ email }}</li></h3>
+                    {% endfor %}
+                </ol>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

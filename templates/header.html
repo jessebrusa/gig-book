@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='../static/css/stylesheet.css') }}">
+    <title>Heather Rae Gigs</title>
+</head>
+<body>
+    <div class="navBarContainer">
+        <div>
+            <div>
+                <a href="{{ url_for('home') }}">Address Book</a>
+            </div>
+        </div>
+        <div class="rightNavItems">
+            <div>
+                <a href="{{ url_for('mass_email_page') }}">Mass Email</a>
+            </div>
+            <div>
+                <a href="{{ url_for('form') }}">+New Contact</a>
+            </div>       
+            {% if current_user.is_authenticated %}
+                <div>
+                    <a href="{{ url_for('logout') }}">Logout</a>
+                </div>
+            {% else %}
+                <div>
+                    <a href="{{ url_for('login_page') }}">Login</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,199 @@
+{% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<body>
+    <form method="POST" action="{{ url_for('form') }}" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{ ckeditor.load() }}
+        <div class="formContainerColumn">
+            <h1 class="contactH1">Heather Rae Gigs</h1>
+            <div class="formContainer">
+                <div class="formRow">
+                    <label class="leftItem">Venue:</label>
+                    {{ form.facility(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Contact Person:</label>
+                    {{ form.contact_person(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Phone Number:</label>
+                    {{ form.phone_number(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Email:</label>
+                    {{ form.email(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Mass Email List:</label>
+                    <div class="booleanContainer">
+                        {{ form.mass_email(class_='booleanField') }}
+                    </div>
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Street Address:</label>
+                    {{ form.street(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Town:</label>
+                    {{ form.town(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">State:</label>
+                    {{ form.state(class_='dropdownOption') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Zip Code:</label>
+                    {{ form.zip_code(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Distance Time (min):</label>
+                    {{ form.distance_time(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Venue Type:</label>
+                    {{ form.venue_type(class_='dropdownOption venueOption') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Performance Type:</label>
+                    {{ form.performance_type(class_='dropdownOption') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Location Img:</label>
+                    {{ form.location_img_url(class_='chooseFile') }}
+                </div>      
+                <h2><u>Setlist</u></h2>
+                <div class="setList">
+                    <div class="setListRow">
+                        <div class="setListColumn">
+                            <label><u>30's</u></label>
+                            {{ form.set_list_30(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>40's</u></label>
+                            {{ form.set_list_40(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>50's</u></label>
+                            {{ form.set_list_50(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>60's</u></label>
+                            {{ form.set_list_60(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>70's</u></label>
+                            {{ form.set_list_70(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>80's</u></label>
+                            {{ form.set_list_80(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>90's</u></label>
+                            {{ form.set_list_90(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>2000's</u></label>
+                            {{ form.set_list_2000(class_='booleanField') }}
+                        </div>  
+                    </div>
+                    <div class="setListRow">
+                        <div class="setListColumn">
+                            <label><u>Present</u></label>
+                            {{ form.set_list_present(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>Outreach</u></label>
+                            {{ form.set_list_outreach(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>Christian</u></label>
+                            {{ form.set_list_christian(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>Secular</u></label>
+                            {{ form.set_list_secular(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>Originals</u></label>
+                            {{ form.set_list_originals(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>Worship</u></label>
+                            {{ form.set_list_worship(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>Hymns</u></label>
+                            {{ form.set_list_hymns(class_='booleanField') }}
+                        </div>
+                    </div>
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Duration (min):</label>
+                    {{ form.duration_list(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Date</label>
+                    {{ form.date(class_='dateCalendar') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Price:</label>
+                    {{ form.price_list(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Preferred Day:</label>
+                    <div class="itemsDayTime">
+                        {{ form.preferred_day(class_='dropdownOption dayItem') }}
+                        <input type="time" class="timeField timeItem" name="time_">
+                    </div>
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Feedback:</label>
+                    {{ form.feedback_list(class_='dropdownOption') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Testimonial:</label>
+                    {{ form.testimonials_list(class_='ckEditor') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Comments:</label>
+                    {{ form.comments_list(class_='ckEditor') }}
+                </div>
+                <h2><u>Marketing</u></h2>
+                <div class="setList">
+                    <div class="setListRow">
+                        <div class="setListColumn">
+                            <label><u>Physical Flyer</u></label>
+                            {{ form.marketing_list_physical_flyer(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>Electronic Flyer</u></label>
+                            {{ form.marketing_list_electronic_flyer(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>Physical Business Card</u></label>
+                            {{ form.marketing_list_physical_business_card(class_='booleanField') }}
+                        </div>
+                    </div>
+                    <div class="setListRow">
+                        <div class="setListColumn">
+                            <label><u>EPK</u></label>
+                            {{ form.marketing_list_epk(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>Chocolate</u></label>
+                            {{ form.marketing_list_chocolate(class_='booleanField') }}
+                        </div>
+                        <div class="setListColumn">
+                            <label><u>Video Clip</u></label>
+                            {{ form.marketing_list_video_clip(class_='booleanField') }}
+                        </div>
+                    </div>
+                </div>    
+            </div>
+            {{ form.submit(class_='submitButton') }} 
+        </div> 
+    </form>    
+</body>
+</html>

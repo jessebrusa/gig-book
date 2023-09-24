@@ -1,0 +1,26 @@
+{% include 'header.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<body>
+    <form method="POST" action="{{ url_for('mass_email_page') }}" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        {{ ckeditor.load() }}
+        <div class="formContainerColumn">
+            <h1 class="contactH1">Mass Email</h1>
+            <div class="formRow massEmail">
+                <label class="leftItem">Choose an Attachment:</label>
+                <!-- <input type="file" class="inputField" name="attachment"> -->
+                {{ form.attachment(class_='chooseFile') }}
+            </div>
+            <div class="formRow massEmail">
+                <label class="leftItem">Subject:</label>
+                {{ form.subject(class_='inputField') }}
+            </div>
+            <div class="formRow massEmail">
+                <label class="leftItem">Body:</label>
+                {{ form.body(class_='textArea') }}
+            </div>
+            {{ form.submit(class_='submitButton') }} 
+        </div>
+    </form>
+</body>
