@@ -22,7 +22,7 @@
                     {% for contact in contacts %}
                         <div class="formRow contactDelete">
                             <label class="leftItem">{{ contact.contact_person }}:</label>
-                            <input type="text" class="inputField" name="contact.contact_person">
+                            <input type="text" class="inputField" name="contact_{{ contact.id }}">
                         </div>
                         <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='contact_person', data=contact.id) }}">DELETE</a>
                     {% endfor %}
@@ -48,21 +48,21 @@
                     {% endfor %}
                 {% endif %}
                 {% if phone_numbers %}
-                    {% for num in range(phone_numbers_len) %}
+                    {% for phone_number in phone_numbers %}
                         <div class="formRow">
-                            <label class="leftItem">{{ phone_numbers[num] }}:</label>
-                            <input type="text" class="inputField" name="phone_number_{{ num }}">
+                            <label class="leftItem">{{ phone_number.phone_number }}:</label>
+                            <input type="text" class="inputField" name="phone_number_{{ phone_number.id }}">
                         </div>
-                        <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='phone_number', data=num) }}">DELETE</a>
+                        <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='phone_number', data=phone_number.id) }}">DELETE</a>
                     {% endfor %}
                 {% endif %}
                 {% if emails %}
-                    {% for num in range(emails_len) %}
+                    {% for email in emails %}
                         <div class="formRow">
-                            <label class="leftItem">{{ emails[num] }}:</label>
-                            <input type="text" class="inputField" id="email_{{ email }}" name="email_{{ email }}">
+                            <label class="leftItem">{{ email.email }}:</label>
+                            <input type="text" class="inputField" name="email_{{ email.id }}">
                         </div>
-                        <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='email', data=num) }}">DELETE</a>
+                        <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='email', data=email.id) }}">DELETE</a>
                     {% endfor %}
                     <div class="formRow">
                         {% if mass_email %}
@@ -79,43 +79,43 @@
                     </div>
                 {% endif %}
                 {% if days_times %}
-                    {% for num in range(days_times_len) %}
-                        {% if days_times[num][0] and days_times[num][1] %}
+                    {% for day_time in days_times %}
+                        {% if day_time[1] and day_time[2] %}
                             <div class="formRow">
-                                <label class="leftItem">{{ days_times[num][0] }}: {{ days_times[num][1] }}</label>
-                                <select name="day_{{ num }}" class="dropdownOption venueOption">
+                                <label class="leftItem">{{ day_time[1] }}: {{ day_time[2] }}</label>
+                                <select name="day_{{ day_time[0] }}" class="dropdownOption venueOption">
                                     <option value="None">None</option>
                                     {% for choice in weekdays %}
                                         <option value="{{ choice }}">{{ choice }}</option>
                                     {% endfor %}
                                 </select>
-                                <input type="time" class="timeField timeItem" id="time_{{ num }}" name="time_{{ num }}">
+                                <input type="time" class="timeField timeItem" name="time_{{ day_time[0] }}">
                             </div>
-                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='preferred_day_time', data=num) }}">DELETE</a>
-                        {% elif days_times[num][0] %}
+                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='preferred_day_time', data=day_time[0]) }}">DELETE</a>
+                        {% elif day_time[1] %}
                             <div class="formRow">
-                                <label class="leftItem">{{ days_times[num][0] }}</label>
-                                <select name="day_{{ num }}" class="dropdownOption venueOption">
+                                <label class="leftItem">{{ day_time[1] }}</label>
+                                <select name="day_{{ day_time[0] }}" class="dropdownOption venueOption">
                                     <option value="None">None</option>
                                     {% for choice in weekdays %}
                                         <option value="{{ choice }}">{{ choice }}</option>
                                     {% endfor %}
                                 </select>
-                                <input type="time" class="timeField timeItem" id="time_{{ num }}" name="time_{{ num }}">
+                                <input type="time" class="timeField timeItem" name="time_{{ day_time[1] }}">
                             </div>
-                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='preferred_day_time', data=num) }}">DELETE</a>
+                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='preferred_day_time', data=day_time[0]) }}">DELETE</a>
                         {% else %}
                             <div class="formRow">
-                                <label class="leftItem">{{ days_times[num][1] }}</label>
-                                <select name="day_{{ num }}" class="dropdownOption venueOption">
+                                <label class="leftItem">{{ day_time[2] }}</label>
+                                <select name="day_{{ day_time[0] }}" class="dropdownOption venueOption">
                                     <option value="">None</option>
                                     {% for choice in weekdays %}
                                         <option value="{{ choice }}">{{ choice }}</option>
                                     {% endfor %}
                                 </select>
-                                <input type="time" class="timeField timeItem" id="time_{{ num }}" name="time_{{ num }}">
+                                <input type="time" class="timeField timeItem" name="time_{{ day_time[0] }}">
                             </div>
-                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='preferred_day_time', data=num) }}">DELETE</a>
+                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='preferred_day_time', data=day_time[0]) }}">DELETE</a>
                         {% endif %}
                     {% endfor %}
                 {% endif %}

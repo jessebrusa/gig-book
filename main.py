@@ -13,7 +13,9 @@ split_break_date_item, edit_data_method, delete_data_method, edit_address_method
 edit_mass_email_method, edit_data_method_break, set_list_form_submit, split_break_dates, \
 wtf_edit_data_market, marketing_list_form_submit, wtf_edit_method, wtf_edit_ckeditor, feedback_dates_values, \
 edit_data_date_method, testimonial_dates_values, wtf_edit_testimonial, generate_hash_salt, bible_url, params, \
-send_email_with_attachment, attachment_url, check_for_data_return_last
+send_email_with_attachment, attachment_url, check_for_data_return_last, return_list, check_field_function, edit_database, \
+format_time, edit_two_database
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean
@@ -44,35 +46,63 @@ login_manager.init_app(app)
 class DataBase(db.Model):
     __tablename__ = 'database'
     id = db.Column(db.Integer, primary_key=True)
-    facility = db.Column(db.String(250))
+    facility = db.Column(db.String(250), nullable=False)
     
-    town = db.Column(db.String(250))
-    street = db.Column(db.String(250))
-    state = db.Column(db.String(250))
-    zip_code = db.Column(db.String(250))
-    phone_number = db.Column(db.String(250))
-    distance_time = db.Column(db.Integer)
+    town = db.Column(db.String(250), nullable=False)
+    street = db.Column(db.String(250), nullable=False)
+    state = db.Column(db.String(250), nullable=False)
+    zip_code = db.Column(db.String(250), nullable=False)
+
+    distance_time = db.Column(db.Integer, nullable=False)
     venue_type = db.Column(db.String(250))
     location_img_url = db.Column(db.String(250))
-    email = db.Column(db.String(250))
+
     mass_email = db.Column(db.Boolean)
     performance_type = db.Column(db.String(250))
     set_list = db.Column(db.String(250))
     duration_list = db.Column(db.String(250))
     date_price_list = db.Column(db.String(250))
-    preferred_day_time_list = db.Column(db.String(250))
+
     date_feedback_list = db.Column(db.Text)
-    date_testimonials_list = db.Column(db.Text)
+    date_testimonials_list = db.Column(db.Text) 
     comments_list = db.Column(db.Text)
     date_marketing_list = db.Column(db.String(250))
 
-    contact_person = db.relationship('ContactPerson')
+    contact_person = db.relationship('ContactTable')
+    email = db.relationship('EmailTable')
+    phone_number = db.relationship('PhoneNumberTable')
+    preferred_day_time = db.relationship('PreferredDayTimeTable')
 
 
-class ContactPerson(db.Model):
-    __tablename__ = 'contact_person_table'
+class ContactTable(db.Model):
+    __tablename__ = 'contact_table'
     id = db.Column(db.Integer, primary_key=True)
-    contact_person = db.Column(db.String(250))
+    contact_person = db.Column(db.String(250), nullable=False)
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class PhoneNumberTable(db.Model):
+    __tablename__ = 'phone_number_table'
+    id = db.Column(db.Integer, primary_key=True)
+    phone_number = db.Column(db.String(250), nullable=False)
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class EmailTable(db.Model):
+    __tablename__ = 'email_table'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(250))
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class PreferredDayTimeTable(db.Model):
+    __tablename__ = 'preferred_day_time_table'
+    id = db.Column(db.Integer, primary_key=True)
+    day = db.Column(db.String(250))
+    time = db.Column(db.String(250))
 
     data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
 
@@ -139,17 +169,12 @@ def home():
 
             facilities = DataBase.query.all()
     
-            facilities = sorted(facilities, key=lambda x: x.facility)
+            facilities = sorted(facilities, key=lambda x: x.facility)      
 
-            facility_contacts = [
-                check_for_data_return_last(facility.contact_person).contact_person.lower() for facility in facilities]
-            
-            print(facility_contacts)
-            print(request_name.lower())
-
-            facilities = [facility for facility in facilities if request_name.lower() in facility.facility.lower() 
+            facilities = [facility for facility in facilities 
+                          if request_name.lower() in facility.facility.lower() 
                           or request_name.lower() in facility.town.lower()
-                          or request_name.lower() in facility_contacts]
+                          or any(request_name.lower() in contact.contact_person.lower() for contact in facility.contact_person)]
 
             facility_names = [last_item(split_list(facility.facility)) for facility in facilities]
             length = len(facility_names)
@@ -241,14 +266,9 @@ def form():
                                    secure_filename(f'{file_string}{file_type}')))
 
             location_img_url = f'../static/location_img/{file_string}{file_type}'
-
         else:
             location_img_url = None
 
-        if form.email.data:
-            email = form.email.data
-        else:
-            email = None
 
         if form.performance_type.data != 'None':
             performance_type = form.performance_type.data
@@ -280,19 +300,10 @@ def form():
             preferred_day = form.preferred_day.data
         else:
             preferred_day = None
-        if form.preferred_time.data:
+        if request.form.get('time_'):
             preferred_time = request.form.get('time_')
         else:
             preferred_time = None
-
-        if preferred_day and preferred_time:
-            preferred_day_time = f"{preferred_day}|{preferred_time}"
-        elif preferred_day:
-            preferred_day_time = preferred_day
-        elif preferred_time:
-            preferred_day_time = preferred_time
-        else:
-            preferred_day_time = None
 
         if form.feedback_list.data != 'None':
             if date:
@@ -366,18 +377,15 @@ def form():
             town = form.town.data,
             street = form.street.data,
             zip_code = form.zip_code.data,
-            phone_number = phone_string,
             distance_time = form.distance_time.data,
             venue_type = venue_type,
             location_img_url = location_img_url,
-            email = email,
             mass_email = form.mass_email.data,
             performance_type = performance_type,
             set_list = set_list_string,
             duration_list = duration_list,
             date_feedback_list = feedback,
             date_price_list = price_list,
-            preferred_day_time_list = preferred_day_time,
             date_testimonials_list = testimonials_list,
             comments_list = comments_list,
             date_marketing_list = market_list_string
@@ -386,15 +394,56 @@ def form():
         db.session.add(new_entry)
         db.session.commit()
 
-        new_contact = ContactPerson(
-            contact_person = form.contact_person.data,
-            data_base_id = new_entry.id,
-        )
 
-        db.session.add(new_contact)
-        db.session.commit()
+        if form.contact_person.data:
+            new_contact = ContactTable(
+                contact_person = form.contact_person.data,
+                data_base_id = new_entry.id,
+            )
+
+            db.session.add(new_contact)
+            db.session.commit()
+
+        if form.email.data:
+            new_email = EmailTable(
+                email = form.email.data,
+                data_base_id = new_entry.id
+            )
+
+            db.session.add(new_email)
+            db.session.commit()
 
 
+        if phone_string:
+            new_phone_number = PhoneNumberTable(
+                phone_number = phone_string,
+                data_base_id = new_entry.id
+            )
+            db.session.add(new_phone_number)
+            db.session.commit()
+
+
+        if preferred_day and preferred_time:
+            new_preferred_day_time = PreferredDayTimeTable(
+                day = preferred_day,
+                time = format_time(preferred_time),
+                data_base_id = new_entry.id
+            )
+        elif preferred_day:
+            new_preferred_day_time = PreferredDayTimeTable(
+                day = preferred_day,
+                data_base_id = new_entry.id
+            )
+        elif preferred_time:
+            new_preferred_day_time = PreferredDayTimeTable(
+                time = format_time(preferred_time),
+                data_base_id = new_entry.id
+            )
+        else:
+            new_preferred_day_time = None
+        if new_preferred_day_time:
+            db.session.add(new_preferred_day_time)
+            db.session.commit()
 
         return redirect(url_for('facility_page', id=new_entry.id))
 
@@ -406,15 +455,14 @@ def form():
 def facility_page(id):
     facility = DataBase.query.filter_by(id=id).first()
 
-    contact_person = check_for_data_return_last(facility.contact_person)
-    if contact_person:
-        contact_person = contact_person.contact_person
+    contact_person = check_for_data_return_last(facility.contact_person, 'contact_person')
 
-    phone_number = last_item(split_list(facility.phone_number))
+    phone_number = check_for_data_return_last(facility.phone_number, 'phone_number')
     phone_ext = ext_phone(phone_number)
     phone_string = phone_to_string(phone_number)
 
-    email = last_item(split_list(facility.email))
+    email = check_for_data_return_last(facility.email, 'email')
+
 
     venue_type = split_list(facility.venue_type)
 
@@ -423,8 +471,7 @@ def facility_page(id):
     duration_list = split_list(facility.duration_list)
     duration_time = format_duration(facility.duration_list, duration_list)
 
-    day_time_array = split_list(facility.preferred_day_time_list)
-    day_time_list = split_break_day_time(day_time_array)
+    day_time_list = [[day_time.day, day_time.time] for day_time in facility.preferred_day_time]
 
     date_price_array = split_list(facility.date_price_list)
     date_price_list = split_break_itemOne_itemTwo(date_price_array)  
@@ -487,19 +534,13 @@ def commit_add_data(id, field):
     form = AddressBookForm()
     
     if request.method == 'POST':       
-        
-        # new_contact = add_data_method('contact_person', field, 
-        #                               'contact_person_', facility.contact_person)
-        # if new_contact:
-        #     facility.contact_person = new_contact
 
         if field == 'contact_person':
-            new_contact = ContactPerson(
+            new_contact = ContactTable(
                 contact_person = request.form.get('contact_person_'),
                 data_base_id = id,
             )
             db.session.add(new_contact)
-            db.session.commit()
         
 
         image_file_string_type = image_url('location_img', field, 'location_img_new', facility.location_img_url)
@@ -510,16 +551,21 @@ def commit_add_data(id, field):
             facility.location_img_url = f'../static/location_img/{image_file_string_type[1]}{image_file_string_type[2]}'
 
 
-        new_phone_number = add_data_method('phone_number', field,
-                                           'phone_number_', facility.phone_number)
-        if new_phone_number:
-            facility.phone_number = new_phone_number
+        if field == 'phone_number':
+            new_phone_number = PhoneNumberTable(
+                phone_number = request.form.get('phone_number_'),
+                data_base_id = id,
+            )
+            db.session.add(new_phone_number)
 
 
-        new_email = add_data_method('email', field, 'email_', facility.email)
-        if new_email:
-            facility.email = new_email
-            
+        if field == 'email':
+            new_email = EmailTable(
+                email = request.form.get('email_'),
+                data_base_id = id,
+            )
+            db.session.add(new_email)
+            db.session.commit()
 
         new_venue = add_data_method('venue_type', field, 
                                     'venue_type_', facility.venue_type)
@@ -534,12 +580,30 @@ def commit_add_data(id, field):
         if new_duration:
             facility.duration_list = new_duration 
 
-
-        new_preferred_day_time = add_two_data_method('preferred_day_time', field,
-                                                     'preferred_day_', 'time_',
-                                                     facility.preferred_day_time_list)
-        if new_preferred_day_time:
-            facility.preferred_day_time_list = new_preferred_day_time
+        if field == 'preferred_day_time':
+            day = request.form.get('preferred_day_')
+            time = request.form.get('time_')
+            if day and time:
+                new_preferred_day_time = PreferredDayTimeTable(
+                    day = day,
+                    time = format_time(time),
+                    data_base_id = id
+                )
+            elif day:
+                new_preferred_day_time = PreferredDayTimeTable(
+                    day = day,
+                    data_base_id = id
+                )
+            elif time:
+                new_preferred_day_time = PreferredDayTimeTable(
+                    time = format_time(time),
+                    data_base_id = id
+                )
+            else:
+                new_preferred_day_time = None
+            if new_preferred_day_time:
+                db.session.add(new_preferred_day_time)
+                db.session.commit()
                    
 
         new_date_price = add_date_item_method('date_price', field,
@@ -585,25 +649,24 @@ def edit_field(id, field):
     form = AddressBookForm()
 
     venue = last_item(compare_field_return_data('facility', field, facility.facility))
-    # contacts = compare_field_return_data('contact_person', field, facility.contact_person)
 
-    if field == 'contact_person':
-        contacts = facility.contact_person
-    else:
-        contacts = None
+    contacts = check_field_function('contact_person', field, return_list(facility.contact_person))
+
+
     distance_time = last_item(compare_field_return_data('distance_time', field, str(facility.distance_time)))
     location_img = compare_field_return_data('location_img', field, facility.location_img_url)
     address = compare_field_address('address', field, facility.street, facility.town,
                                     facility.state, facility.zip_code)
-    phone_numbers = compare_field_return_data('phone_number', field, facility.phone_number)
-    phone_numbers_len = list_length(phone_numbers)
-    emails = compare_field_return_data('email', field, facility.email)
-    emails_len = list_length(emails)
+    
+
+    phone_numbers = check_field_function('phone_number', field, return_list(facility.phone_number))
+
+
+    emails = check_field_function('email', field, return_list(facility.email))
     mass_email = facility.mass_email
-    preferred_day_time = compare_field_return_data('preferred_day_time', field,
-                                                   facility.preferred_day_time_list)
-    days_times = split_break_itemOne_itemTwo(preferred_day_time)
-    days_times_len = list_length(days_times)
+    
+    days_times = [[day_time.id, day_time.day, day_time.time] for day_time in facility.preferred_day_time]
+
     venue_types = compare_field_return_data('venue_type', field, facility.venue_type)
     venue_types_len = list_length(venue_types)
     performance_types = compare_field_return_data('venue_type', field, facility.performance_type)
@@ -651,9 +714,9 @@ def edit_field(id, field):
     return render_template('edit-field.html', id=id, facility=facility, form=form, field=field, venue=venue, contacts=contacts,
                            distance_time=distance_time, venue_types_len=venue_types_len, performance_types_len=performance_types_len, duration_list_len=duration_list_len,
                            phone_numbers=phone_numbers, location_img=location_img, address=address, emails=emails, mass_email=mass_email, days_times=days_times,
-                           days_times_len=days_times_len, venue_types=venue_types, venue_type_list=venue_type_list, performance_types=performance_types,
+                           venue_types=venue_types, venue_type_list=venue_type_list, performance_types=performance_types,
                            performance_type_list=performance_type_list, duration_list=duration_list, venue_box=venue_box, date_price_list=date_price_list,
-                           phone_numbers_len=phone_numbers_len, emails_len=emails_len, weekdays=weekdays, date_price_list_len=date_price_list_len,
+                           weekdays=weekdays, date_price_list_len=date_price_list_len,
                            set_list=set_list, set_list_array=set_list_array, date_market=date_market, date_market_len=date_market_len, date_market_labels=date_market_labels,
                            date_market_values=date_market_values, comments=comments, comments_len=comments_len, feedback=feedback, feedback_len=feedback_len,
                            feedback_list_items=feedback_list_items, feedback_dates=feedback_dates, feedback_values=feedback_values, testimonials_list=testimonials_list,
@@ -672,10 +735,9 @@ def commit_edit(id, field):
         if edit_facility:
             facility.facility = edit_facility
 
-        edit_contact_person = edit_data_method('contact_person', field, 
-                                                    facility.contact_person, 'contact_person_')
-        if edit_contact_person:
-            facility.contact_person = edit_contact_person
+
+        if field == 'contact_person':
+            edit_database(facility.contact_person, 'contact_', ContactTable, 'contact_person')
 
 
         edit_distance_time = edit_data_method('distance_time', field, 
@@ -701,15 +763,14 @@ def commit_edit(id, field):
             facility.zip_code = edit_address[3]
 
 
-        edit_phone_number = edit_data_method('phone_number', field, 
-                                             facility.phone_number, 'phone_number_')
-        if edit_phone_number:
-            facility.phone_number = edit_phone_number
+        if field == 'phone_number':
+            edit_database(facility.phone_number, 'phone_number_', PhoneNumberTable, 'phone_number')
 
-        
-        edit_email = edit_data_method('email', field, facility.email, 'email_')
-        if edit_email:
-            facility.email = edit_email
+
+        if field == 'email':
+            edit_database(facility.email, 'email_', EmailTable, 'email')
+ 
+
 
         edit_mass_email = edit_mass_email_method('email', field)
         if edit_mass_email == 'True':
@@ -718,11 +779,15 @@ def commit_edit(id, field):
             facility.mass_email = False
             
 
-        edit_preferred_day_time = edit_data_method_break('preferred_day_time', field,
-                                                    facility.preferred_day_time_list,
-                                                    'day_', 'time_')
-        if edit_preferred_day_time:
-            facility.preferred_day_time_list = edit_preferred_day_time
+        if field == 'preferred_day_time':
+            edit_two_database(facility.preferred_day_time, 'day_', 'time_', 
+                              PreferredDayTimeTable, 'day', 'time')
+
+        # edit_preferred_day_time = edit_data_method_break('preferred_day_time', field,
+        #                                             facility.preferred_day_time_list,
+        #                                             'day_', 'time_')
+        # if edit_preferred_day_time:
+        #     facility.preferred_day_time_list = edit_preferred_day_time
 
 
         edit_venue_type = edit_data_method('venue_type', field, 
@@ -849,14 +914,15 @@ def wtform_commit(id, field, data):
 def previous_contact(id):
     facility = DataBase.query.filter_by(id=id).first()
 
-    contact_list = [contact.contact_person for contact in facility.contact_person]
+    contact_list = return_list(facility.contact_person)
 
-    phone_list = split_list(facility.phone_number)
+    phone_list = return_list(facility.phone_number)
 
-    email_list = split_list(facility.email)
+    email_list = return_list(facility.email)
 
 
-    return render_template('previous.html', id=id, contact_list = contact_list, phone_list=phone_list, email_list=email_list)
+    return render_template('previous.html', id=id, contact_list=contact_list, 
+                           phone_list=phone_list, email_list=email_list)
 
 
 @app.route('/delete/<int:id>/<field>/<int:data>', methods=['GET', 'POST'])
@@ -866,39 +932,25 @@ def delete_data(id, field, data):
     data = data
 
 
-    # delete_contact = delete_data_method('contact_person', field, 
-    #                                     facility.contact_person, data, True)
-    # if delete_contact:
-    #     if delete_contact == 'redirect':
-    #         return redirect(url_for('facility_page', id=id))  
-    #     else:
-    #         facility.contact_person = delete_contact
-
     if field == 'contact_person':
-        delete_contact = ContactPerson.query.filter_by(id=data).first()
-        db.session.delete(delete_contact)
-        db.session.commit()
-
-
-
-    delete_phone_number = delete_data_method('phone_number', field, 
-                                             facility.phone_number, data, True)
-    if delete_phone_number:
-        if delete_phone_number == 'redirect':
+        if len(facility.contact_person) == 1:
             return redirect(url_for('facility_page', id=id))
         else:
-            facility.phone_number = delete_phone_number
+            delete_contact = ContactTable.query.filter_by(id=data).first()
+            db.session.delete(delete_contact)
 
 
-    delete_email = delete_data_method('email', field,
-                                      facility.email, data, False)
-    if delete_email:
-        if delete_email == 'None':
-            facility.email = None
-            db.session.commit()
+    if field == 'phone_number':
+        if len(facility.contact_person) == 1:
             return redirect(url_for('facility_page', id=id))
         else:
-            facility.email = delete_email
+            delete_phone_number = PhoneNumberTable.query.filter_by(id=data).first()
+            db.session.delete(delete_phone_number)
+
+
+    if field == 'email':
+        delete_email = EmailTable.query.filter_by(id=data).first()
+        db.session.delete(delete_email)
 
 
     delete_preferred_day_time = delete_data_method('preferred_day_time', field,

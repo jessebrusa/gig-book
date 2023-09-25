@@ -53,7 +53,7 @@ class AddressBookForm(FlaskForm):
     location_img_url = FileField('Choose File')
     email = EmailField('Email')
     mass_email = BooleanField('Mass Email List')
-    performance_type = SelectField('Performance Type', choices=[('None')] + performance_type_list, default='None', validators=[DataRequired()])
+    performance_type = SelectField('Performance Type', choices=[('None')] + performance_type_list, default='None')
 
     set_list_30 = BooleanField("30's")
     set_list_40 = BooleanField("40's")
@@ -74,9 +74,9 @@ class AddressBookForm(FlaskForm):
     duration_list = IntegerField("Duration")
     date = DateField('Date')
     price_list = IntegerField('Price')
-    preferred_day = SelectField('Preferred Day', choices=[('None')] + weekdays, default='None', validators=[DataRequired()])
+    preferred_day = SelectField('Preferred Day', choices=[('None')] + weekdays, default='None')
     preferred_time = TimeField('Preferred Time')
-    feedback_list = SelectField('Feedback_list', choices=[('None')] + feedback_list_items, default='None', validators=[DataRequired()])
+    feedback_list = SelectField('Feedback_list', choices=[('None')] + feedback_list_items, default='None')
     testimonials_list = CKEditorField('Testimonials')
     comments_list = CKEditorField('Comments')
     
@@ -93,11 +93,11 @@ class AddressBookForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    f_name = StringField('First Name')
-    l_name = StringField('Last Name')
-    email = EmailField('Email')
-    password = PasswordField('Password')
-    register_password = StringField('Password')
+    f_name = StringField('First Name', validators=[DataRequired()])
+    l_name = StringField('Last Name', validators=[DataRequired()])
+    email = EmailField('Email', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    register_password = StringField('Password', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 

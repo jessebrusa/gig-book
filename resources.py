@@ -12,14 +12,69 @@ import os
 
 
 
-def check_for_data_return_last(facility_object):
+def check_for_data_return_last(facility_object, table_variable):
     if facility_object:
-        return facility_object[-1]
+        return getattr(facility_object[-1], table_variable)
     else:
         return None
 
 
+def return_list(facility_object):
+    if facility_object:
+        return facility_object
+    else:
+        return None
+    
 
+def check_field_function(correct_field, field, function):
+    if correct_field == field:
+        return function
+    else:
+        return None
+
+
+def edit_database(facility_object, request_name, table, table_variable):
+    id_list = [data.id for data in facility_object]
+    for data_id in id_list:
+        request_name_id = f'{request_name}{data_id}'
+        request_data = request.form.get(request_name_id)
+        if request_data is None:
+            pass
+        elif len(request_data) == 0:
+            pass
+        else:
+            original_data = table.query.filter_by(id=data_id).first()
+            setattr(original_data, table_variable, request_data)
+
+            
+def edit_two_database(facility_object, request_name_one, request_name_two,
+                      table, table_variation_one, table_variation_two):
+    id_list = [data.id for data in facility_object]
+    for data_id in id_list:
+        request_name_one_id = f'{request_name_one}{data_id}'
+        request_name_two_id = f'{request_name_two}{data_id}'
+        print(request_name_two_id)
+        request_data_one = request.form.get(request_name_one_id)
+        request_data_two = request.form.get(request_name_two_id)
+        print(request_data_two)
+
+        if request_data_one is None:
+            pass
+        elif len(request_data_one) == 0:
+            pass
+        elif request_data_one == 'None':
+            pass
+        else:
+            original_data_one = table.query.filter_by(id=data_id).first()
+            setattr(original_data_one, table_variation_one, request_data_one)
+
+        if request_data_two is None:
+            pass
+        elif len(request_data_two) == 0:
+            pass
+        else:
+            original_data_two = table.query.filter_by(id=data_id).first()
+            setattr(original_data_two, table_variation_two, request_data_two)
 
 def split_list(column):
     if column == None:

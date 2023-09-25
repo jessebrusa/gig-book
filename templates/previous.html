@@ -10,7 +10,7 @@
             <div class="previousList">
                 <ol>
                     {% for contact in contact_list %}
-                    <h3><li>{{ contact }}</li></h3>
+                    <h3><li>{{ contact.contact_person }}</li></h3>
                     {% endfor %}
                 </ol>
             </div>
@@ -20,7 +20,7 @@
             <div class="previousList">
                 <ol>
                     {% for phone in phone_list %}
-                        <h3><li>{{ phone }}</li></h3>
+                        <h3><li>{{ phone.phone_number }}</li></h3>
                     {% endfor %}
                 </ol>
             </div>
@@ -30,7 +30,7 @@
             <div class="previousList">
                 <ol>
                     {% for email in email_list %}
-                        <h3><li>{{ email }}</li></h3>
+                        <h3><li>{{ email.email }}</li></h3>
                     {% endfor %}
                 </ol>
             </div>
