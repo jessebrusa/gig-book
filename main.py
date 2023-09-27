@@ -13,8 +13,8 @@ split_break_date_item, edit_data_method, delete_data_method, edit_address_method
 edit_mass_email_method, edit_data_method_break, set_list_form_submit, split_break_dates, \
 wtf_edit_data_market, marketing_list_form_submit, wtf_edit_method, wtf_edit_ckeditor, feedback_dates_values, \
 edit_data_date_method, testimonial_dates_values, wtf_edit_testimonial, generate_hash_salt, bible_url, params, \
-send_email_with_attachment, attachment_url, check_for_data_return_last, return_list, check_field_function, edit_database, \
-format_time, edit_two_database
+send_email_with_attachment, attachment_url, check_for_data_return_last, return_list, edit_database, \
+format_time, edit_two_database, return_table_list
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -54,13 +54,13 @@ class DataBase(db.Model):
     zip_code = db.Column(db.String(250), nullable=False)
 
     distance_time = db.Column(db.Integer, nullable=False)
-    venue_type = db.Column(db.String(250))
+ 
     location_img_url = db.Column(db.String(250))
 
     mass_email = db.Column(db.Boolean)
-    performance_type = db.Column(db.String(250))
+
     set_list = db.Column(db.String(250))
-    duration_list = db.Column(db.String(250))
+
     date_price_list = db.Column(db.String(250))
 
     date_feedback_list = db.Column(db.Text)
@@ -72,7 +72,9 @@ class DataBase(db.Model):
     email = db.relationship('EmailTable')
     phone_number = db.relationship('PhoneNumberTable')
     preferred_day_time = db.relationship('PreferredDayTimeTable')
-
+    venue_type = db.relationship('VenueTypeTable')
+    performance_type = db.relationship('PerformanceTypeTable')
+    duration = db.relationship('DurationTable')
 
 class ContactTable(db.Model):
     __tablename__ = 'contact_table'
@@ -96,6 +98,31 @@ class EmailTable(db.Model):
     email = db.Column(db.String(250))
 
     data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class VenueTypeTable(db.Model):
+    __tablename__ = 'venue_type_table'
+    id = db.Column(db.Integer, primary_key=True)
+    venue = db.Column(db.String(250))
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class PerformanceTypeTable(db.Model):
+    __tablename__ = 'performance_type_table'
+    id = db.Column(db.Integer, primary_key=True)
+    performance = db.Column(db.String(250))
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class DurationTable(db.Model):
+    __tablename__ = 'duration_table'
+    id = db.Column(db.Integer, primary_key=True)
+    hour = db.Column(db.Integer)
+    minute = db.Column(db.Integer)
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))    
 
 
 class PreferredDayTimeTable(db.Model):
@@ -149,7 +176,7 @@ def home():
     length = len(facility_names)
 
     facility_contacts = [
-    check_for_data_return_last(facility.contact_person).contact_person if facility.contact_person else None
+    check_for_data_return_last(facility.contact_person, 'contact_person') if facility.contact_person else None
     for facility in facilities
     ]
 
@@ -243,6 +270,7 @@ def form():
     form = AddressBookForm()
 
     if request.method == 'POST':
+
         if form.location_img_url.data:
             file = form.location_img_url.data
             file_string = str(form.location_img_url.data.filename)
@@ -269,24 +297,31 @@ def form():
         else:
             location_img_url = None
 
+        if form.venue_type.data == 'None':
+            venue_type = None
+        else:
+            venue_type = form.venue_type.data
 
         if form.performance_type.data != 'None':
             performance_type = form.performance_type.data
         else:
             performance_type = None
 
-        
-        set_list_string = set_list_form_submit('no_field', 'no_field', form)
-
-
         if form.duration_list.data:
-            duration_list = form.duration_list.data
+            duration_hour_min = format_duration(form.duration_list.data)
+            duration_hour = duration_hour_min[0]
+            duration_min = duration_hour_min[1]
         else:
-            duration_list = None
+            duration_hour = None
+            duration_min = None
+
         if form.date.data:
             date = form.date.data
         else:
             date = None
+        
+        set_list_string = set_list_form_submit('no_field', 'no_field', form)
+       
 
         if form.price_list.data:
             if date:
@@ -366,10 +401,7 @@ def form():
         if ')' in phone_string:
             phone_string = phone_string.replace(')', '')
 
-        if form.venue_type.data == 'None':
-            venue_type = None
-        else:
-            venue_type = form.venue_type.data
+        
 
         new_entry = DataBase(
             facility = form.facility.data,
@@ -378,12 +410,9 @@ def form():
             street = form.street.data,
             zip_code = form.zip_code.data,
             distance_time = form.distance_time.data,
-            venue_type = venue_type,
             location_img_url = location_img_url,
             mass_email = form.mass_email.data,
-            performance_type = performance_type,
             set_list = set_list_string,
-            duration_list = duration_list,
             date_feedback_list = feedback,
             date_price_list = price_list,
             date_testimonials_list = testimonials_list,
@@ -445,6 +474,33 @@ def form():
             db.session.add(new_preferred_day_time)
             db.session.commit()
 
+        if venue_type:
+            new_venue = VenueTypeTable(
+                venue = venue_type,
+                data_base_id = new_entry.id
+            )
+            db.session.add(new_venue)
+            db.session.commit()
+
+        if performance_type:
+            new_performance = PerformanceTypeTable(
+                performance = performance_type,
+                data_base_id = new_entry.id
+            )
+            db.session.add(new_performance)
+            db.session.commit()
+
+
+        if duration_hour or duration_min:
+            new_duration = DurationTable(
+                hour = duration_hour,
+                minute = duration_min,
+                data_base_id = new_entry.id
+            )
+            db.session.add(new_duration)
+            db.session.commit()
+
+
         return redirect(url_for('facility_page', id=new_entry.id))
 
     return render_template('form.html', form=form)
@@ -463,13 +519,11 @@ def facility_page(id):
 
     email = check_for_data_return_last(facility.email, 'email')
 
+    venue_type = return_list(facility.venue_type, 'venue')
 
-    venue_type = split_list(facility.venue_type)
+    performance_type = return_list(facility.performance_type, 'performance')
 
-    performance_type = split_list(facility.performance_type)
-
-    duration_list = split_list(facility.duration_list)
-    duration_time = format_duration(facility.duration_list, duration_list)
+    duration_list = [[hour_min.hour, hour_min.minute] for hour_min in facility.duration]
 
     day_time_list = [[day_time.day, day_time.time] for day_time in facility.preferred_day_time]
 
@@ -496,7 +550,7 @@ def facility_page(id):
     return render_template('facility-page.html', facility=facility, date_price_list=date_price_list, set_list=set_list,
                            market_date_list=market_date_list,contact_person=contact_person, id=id,
                            phone_number=phone_number, email=email, venue_type=venue_type, performance_type=performance_type, 
-                           duration_time=duration_time, day_time_list=day_time_list,comments_list=comments_list, 
+                           day_time_list=day_time_list,comments_list=comments_list, duration_list=duration_list,
                            comments_list_length=comments_list_length,feedback_list=feedback_list, feedback_list_length=feedback_list_length ,
                            testimonial_list=testimonial_list, testimonial_list_length=testimonial_list_length , phone_string=phone_string, 
                            phone_ext=phone_ext)
@@ -567,18 +621,37 @@ def commit_add_data(id, field):
             db.session.add(new_email)
             db.session.commit()
 
-        new_venue = add_data_method('venue_type', field, 
-                                    'venue_type_', facility.venue_type)
-        new_performance_type = add_data_method('venue_type', field, 
-                                               'performance_type_', facility.performance_type) 
-        new_duration = add_data_method('venue_type', field,
-                                            'duration_', facility.duration_list)
-        if new_venue:
-            facility.venue_type = new_venue
-        if new_performance_type:
-            facility.performance_type = new_performance_type
-        if new_duration:
-            facility.duration_list = new_duration 
+        if field == 'venue_type':
+            request_venue = request.form.get('venue_type_')
+            request_performance = request.form.get('performance_type_')
+            request_duration_hour = request.form.get('duration_hour_')
+            request_duration_min = request.form.get('duration_min_')
+
+            if request_venue:
+                new_venue = VenueTypeTable(
+                    venue = request_venue,
+                    data_base_id = id,
+                )
+                db.session.add(new_venue)
+                db.session.commit()
+
+            if request_performance:
+                new_performance = PerformanceTypeTable(
+                    performance = request_performance,
+                    data_base_id = id,
+                )
+                db.session.add(new_performance)
+                db.session.commit()
+
+            if request_duration_hour or request_duration_min:
+                new_duration = DurationTable(
+                    hour = request_duration_hour,
+                    minute = request_duration_min,
+                    data_base_id = id,
+                )
+                db.session.add(new_duration)
+                db.session.commit()
+                
 
         if field == 'preferred_day_time':
             day = request.form.get('preferred_day_')
@@ -650,7 +723,10 @@ def edit_field(id, field):
 
     venue = last_item(compare_field_return_data('facility', field, facility.facility))
 
-    contacts = check_field_function('contact_person', field, return_list(facility.contact_person))
+    if 'contact_person' == field:
+        contacts = return_table_list(facility.contact_person)
+    else:
+        contacts = None
 
 
     distance_time = last_item(compare_field_return_data('distance_time', field, str(facility.distance_time)))
@@ -658,22 +734,36 @@ def edit_field(id, field):
     address = compare_field_address('address', field, facility.street, facility.town,
                                     facility.state, facility.zip_code)
     
+    if 'phone_number' == field:
+        phone_numbers = return_table_list(facility.phone_number)
+    else:
+        phone_numbers = None
 
-    phone_numbers = check_field_function('phone_number', field, return_list(facility.phone_number))
-
-
-    emails = check_field_function('email', field, return_list(facility.email))
-    mass_email = facility.mass_email
+    if 'email' == field:
+        emails = return_table_list(facility.email)
+        mass_email = facility.mass_email
+    else:
+        emails = None
+        mass_email = None
     
-    days_times = [[day_time.id, day_time.day, day_time.time] for day_time in facility.preferred_day_time]
+    if 'preferred_day_time' == field:
+        days_times = [[day_time.id, day_time.day, day_time.time] for day_time in facility.preferred_day_time]
+    else:
+        days_times = None
 
-    venue_types = compare_field_return_data('venue_type', field, facility.venue_type)
-    venue_types_len = list_length(venue_types)
-    performance_types = compare_field_return_data('venue_type', field, facility.performance_type)
-    performance_types_len = list_length(performance_types)
-    duration_list = compare_field_return_data('venue_type', field, facility.duration_list)
-    duration_list_len = list_length(duration_list)
-    venue_box = compare_field('venue_type', field)
+
+    if 'venue_type' == field or 'performance_type' == field or 'duration_list' == field:
+        venue_box = True
+        venue_types = return_table_list(facility.venue_type)
+        performance_types = return_table_list(facility.performance_type)
+        duration_list = [[hour_min.hour, hour_min.minute, hour_min.id] for hour_min in facility.duration]
+    else:
+        venue_box = None
+        venue_types = None
+        performance_types = None
+        duration_list = None
+
+
     date_price_array = compare_field_return_data('date_price', field, facility.date_price_list)
     date_price_list = split_break_date_item(date_price_array)   
     date_price_list_len = list_length(date_price_list)
@@ -712,7 +802,7 @@ def edit_field(id, field):
 
 
     return render_template('edit-field.html', id=id, facility=facility, form=form, field=field, venue=venue, contacts=contacts,
-                           distance_time=distance_time, venue_types_len=venue_types_len, performance_types_len=performance_types_len, duration_list_len=duration_list_len,
+                           distance_time=distance_time,
                            phone_numbers=phone_numbers, location_img=location_img, address=address, emails=emails, mass_email=mass_email, days_times=days_times,
                            venue_types=venue_types, venue_type_list=venue_type_list, performance_types=performance_types,
                            performance_type_list=performance_type_list, duration_list=duration_list, venue_box=venue_box, date_price_list=date_price_list,
@@ -734,6 +824,7 @@ def commit_edit(id, field):
         edit_facility = edit_data_method('facility', field, facility.facility, 'facility_')
         if edit_facility:
             facility.facility = edit_facility
+            
 
 
         if field == 'contact_person':
@@ -769,43 +860,24 @@ def commit_edit(id, field):
 
         if field == 'email':
             edit_database(facility.email, 'email_', EmailTable, 'email')
- 
 
-
-        edit_mass_email = edit_mass_email_method('email', field)
-        if edit_mass_email == 'True':
-            facility.mass_email = True
-        elif edit_mass_email == 'False':
-            facility.mass_email = False
+            edit_mass_email = edit_mass_email_method('email', field)
+            if edit_mass_email == 'True':
+                facility.mass_email = True
+            elif edit_mass_email == 'False':
+                facility.mass_email = False
             
 
         if field == 'preferred_day_time':
             edit_two_database(facility.preferred_day_time, 'day_', 'time_', 
                               PreferredDayTimeTable, 'day', 'time')
 
-        # edit_preferred_day_time = edit_data_method_break('preferred_day_time', field,
-        #                                             facility.preferred_day_time_list,
-        #                                             'day_', 'time_')
-        # if edit_preferred_day_time:
-        #     facility.preferred_day_time_list = edit_preferred_day_time
 
-
-        edit_venue_type = edit_data_method('venue_type', field, 
-                                           facility.venue_type, 'venue_type_')
-        if edit_venue_type:
-            facility.venue_type = edit_venue_type
-
-        
-        edit_performance_type = edit_data_method('venue_type', field,
-                                                 facility.performance_type, 'performance_type_')
-        if edit_performance_type:
-            facility.performance_type = edit_performance_type
-
-    
-        edit_duration_list = edit_data_method('venue_type', field,
-                                              facility.duration_list, 'duration_list_')
-        if edit_duration_list:
-            facility.duration_list = edit_duration_list        
+        if field == 'venue_type':
+            edit_database(facility.venue_type, 'venue_type_', VenueTypeTable, 'venue')
+            edit_database(facility.performance_type, 'performance_type_', PerformanceTypeTable, 'performance')
+            edit_two_database(facility.duration, 'duration_hour_', 'duration_min_', DurationTable,
+                          'hour', 'minute')
 
 
         edit_date_price = edit_data_method_break('date_price', field,
@@ -951,61 +1023,38 @@ def delete_data(id, field, data):
     if field == 'email':
         delete_email = EmailTable.query.filter_by(id=data).first()
         db.session.delete(delete_email)
-
-
-    delete_preferred_day_time = delete_data_method('preferred_day_time', field,
-                                                   facility.preferred_day_time_list,
-                                                   data, False)
-    if delete_preferred_day_time:
-        if delete_preferred_day_time == 'None':
-            facility.preferred_day_time_list = None
+        if return_table_list(facility.email) is None:
             db.session.commit()
             return redirect(url_for('facility_page', id=id))
-        else:
-            facility.preferred_day_time_list = delete_preferred_day_time
 
 
-    delete_venue_type = delete_data_method('venue_type', field,
-                                           facility.venue_type,
-                                           data, False)
-    if delete_venue_type:
-        if delete_venue_type == 'None':
-            facility.venue_type = None
+    if field == 'preferred_day_time':
+        delete_day_time = PreferredDayTimeTable.query.filter_by(id=data).first()
+        db.session.delete(delete_day_time)
+        if return_table_list(facility.preferred_day_time) is None:
             db.session.commit()
-            if facility.venue_type is None and facility.performance_type is None and facility.duration_list is None:
-                return redirect(url_for('facility_page', id=id))
-        else:
-            facility.venue_type = delete_venue_type
+            return redirect(url_for('facility_page', id=id))
+        
 
-    
-    delete_performance_type = delete_data_method('performance_type', field,
-                                                 facility.performance_type,
-                                                 data, False)
-    if delete_performance_type:
-        if delete_performance_type == 'None':
-            facility.performance_type = None
-            db.session.commit()
-            field = 'venue_type'
-            if facility.venue_type is None and facility.performance_type is None and facility.duration_list is None:
-                return redirect(url_for('facility_page', id=id))
-        else:
-            facility.performance_type = delete_performance_type
-            field = 'venue_type'
 
-    
-    delete_duration_list = delete_data_method('duration_list', field,
-                                              facility.duration_list,
-                                              data, False)
-    if delete_duration_list:
-        if delete_duration_list == 'None':
-            facility.duration_list = None
-            db.session.commit()
-            field = 'venue_type'
-            if facility.venue_type is None and facility.performance_type is None and facility.duration_list is None:
-                return redirect(url_for('facility_page', id=id))
-        else:
-            facility.duration_list = delete_duration_list
-            field = 'venue_type'
+    if field == 'venue_type':
+        delete_venue = VenueTypeTable.query.filter_by(id=data).first()
+        db.session.delete(delete_venue)
+        db.session.commit()
+
+    if field == 'performance_type':
+        delete_performance = PerformanceTypeTable.query.filter_by(id=data).first()
+        db.session.delete(delete_performance)
+
+    if field == 'duration_list':
+        delete_duration = DurationTable.query.filter_by(id=data).first()
+        db.session.delete(delete_duration)
+        db.session.commit()
+
+    if field == 'venue_type' or field == 'performance_type' or field == 'duration_list':
+        if return_table_list(facility.venue_type) is None and return_table_list(facility.performance_type) is None \
+            and return_table_list(facility.duration) is None:
+            return redirect(url_for('facility_page', id=id))
 
 
     delete_date_price = delete_data_method('date_price', field,

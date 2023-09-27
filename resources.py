@@ -19,16 +19,16 @@ def check_for_data_return_last(facility_object, table_variable):
         return None
 
 
-def return_list(facility_object):
+def return_list(facility_object, table_variable):
     if facility_object:
-        return facility_object
+        return [getattr(item, table_variable) for item in facility_object]
     else:
         return None
-    
 
-def check_field_function(correct_field, field, function):
-    if correct_field == field:
-        return function
+
+def return_table_list(facility_object):
+    if facility_object:
+        return [item for item in facility_object]
     else:
         return None
 
@@ -53,28 +53,34 @@ def edit_two_database(facility_object, request_name_one, request_name_two,
     for data_id in id_list:
         request_name_one_id = f'{request_name_one}{data_id}'
         request_name_two_id = f'{request_name_two}{data_id}'
-        print(request_name_two_id)
+
         request_data_one = request.form.get(request_name_one_id)
         request_data_two = request.form.get(request_name_two_id)
-        print(request_data_two)
 
-        if request_data_one is None:
-            pass
-        elif len(request_data_one) == 0:
-            pass
-        elif request_data_one == 'None':
-            pass
-        else:
-            original_data_one = table.query.filter_by(id=data_id).first()
-            setattr(original_data_one, table_variation_one, request_data_one)
+    if request_data_one is None:
+        pass
+    elif len(request_data_one) == 0:
+        pass
+    elif request_data_one == 'None':
+        pass
+    else:
+        original_data_one = table.query.filter_by(id=data_id).first()
+        setattr(original_data_one, table_variation_one, request_data_one)
 
-        if request_data_two is None:
-            pass
-        elif len(request_data_two) == 0:
-            pass
-        else:
-            original_data_two = table.query.filter_by(id=data_id).first()
-            setattr(original_data_two, table_variation_two, request_data_two)
+    if request_data_two is None:
+        pass
+    elif len(request_data_two) == 0:
+        pass
+    else:
+        original_data_two = table.query.filter_by(id=data_id).first()
+        if ':' in request_data_two:
+            request_data_two = format_time(request_data_two)
+        setattr(original_data_two, table_variation_two, request_data_two)
+
+
+
+
+
 
 def split_list(column):
     if column == None:
@@ -612,20 +618,26 @@ def phone_to_string(phone_number):
         return None
     
 
-def format_duration(column, time_list):
-    if column == None:
-        return None
-    else:
+def format_duration(time):
+    if isinstance(time, list):
         duration_time = []
-        for time in time_list:
-            hour = math.floor(int(time) / 60)
-            min = int(time) % 60
+        for i in time:
+            hour = math.floor(int(i) / 60)
+            min = int(i) % 60
             if hour < 1:
                 hour = None
             if min == 0:
                 min = None
             duration_time.append([hour, min])
         return duration_time
+    else:
+        hour = math.floor(int(time) / 60)
+        min = int(time) % 60
+        if hour < 1:
+            hour = None
+        if min == 0:
+            min = None
+        return [hour, min]
     
 
 def edit_address_method(correct_field, field, facility):

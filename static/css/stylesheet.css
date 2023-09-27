@@ -869,6 +869,24 @@ p {
     height: 200px;
 }
 
+.durationPadding {
+    padding: 30px;
+}
+
+.durationFlex {
+    display: flex;
+    justify-content: center;
+}
+
+.durationLabel {
+    text-align: center;
+    width: 100px;
+}
+
+.durationInput {
+    width: 170px;
+}
+
 @media only screen and (max-width: 1200px) {
     .top-info {
         width: 90%;

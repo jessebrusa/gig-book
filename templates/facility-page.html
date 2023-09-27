@@ -148,13 +148,13 @@
             {% else %}
                 <h2 class="venueH2"><u>Performance Type:</u></h2>
             {% endif %}
-            {% if facility.duration_list %}
+            {% if duration_list %}
                 <div class="venueContainer">
                     <h2 class="venueH2"><u>Duration:</u></h2>
                     <div class="venueItems">
-                        {% for duration in duration_time %}
+                        {% for duration in duration_list %}
                             {% if duration[0] and duration[1] %}
-                                <h3>{{ duration[0] }}hr {{ duration[1] }}min</h2>
+                                <h3>{{ duration[0] }}hr {{ duration[1] }}min</h3>
                             {% elif duration[0] %}
                                 <h3>{{ duration[0] }}hr</h3>
                             {% elif duration[1] %}

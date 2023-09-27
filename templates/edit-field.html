@@ -128,41 +128,56 @@
                 {% if venue_box %}
                     {% if venue_types %}
                         <label class="venueHeading"><u>Venue Type:</u></label>
-                        {% for num in range(venue_types_len) %}
+                        {% for venue in venue_types %}
                             <div class="formRow">
-                                <label class="leftItem">{{ venue_types[num] }}:</label>
-                                <select name="venue_type_{{ num }}" class="dropdownOption venueOption">
+                                <label class="leftItem">{{ venue.venue }}:</label>
+                                <select name="venue_type_{{ venue.id }}" class="dropdownOption venueOption">
                                     <option value="">None</option>
                                     {% for choice in venue_type_list %}
                                         <option value="{{ choice }}" {% if choice == venue %}selected{% endif %}>{{ choice }}</option>
                                     {% endfor %}
                                 </select>
-                                <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='venue_type', data=num) }}">DELETE</a>
+                                <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='venue_type', data=venue.id) }}">DELETE</a>
                             </div>    
                         {% endfor %}
                     {% endif %}
                     {% if performance_types %}
                         <label class="venueHeading"><u>Performance Type:</u></label>
-                        {% for num in range(performance_types_len) %}
+                        {% for performance in performance_types %}
                             <div class="formRow">
-                                <label class="leftItem">{{ performance_types[num] }}:</label>
-                                <select name="performance_type_{{ num }}" class="dropdownOption venueOption">
+                                <label class="leftItem">{{ performance.performance }}:</label>
+                                <select name="performance_type_{{ performance.id }}" class="dropdownOption venueOption">
                                     <option value="">None</option>
                                     {% for choice in performance_type_list %}
                                         <option value="{{ choice }}" {% if choice == performance %}selected{% endif %}>{{ choice }}</option>
                                     {% endfor %}
                                 </select>
-                                <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='performance_type', data=num) }}">DELETE</a>
+                                <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='performance_type', data=performance.id) }}">DELETE</a>
                             </div>    
                         {% endfor %}
                     {% endif %}
                     {% if duration_list %}
                         <label class="venueHeading"><u>Duration:</u></label>
-                        {% for num in range(duration_list_len) %}
+                        {% for duration in duration_list %}
                             <div class="formRow">
-                                <label class="leftItem">{{ duration_list[num] }} min:</label>
-                                <input type="text" class="inputField" name="duration_list_{{ num }}">
-                                <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='duration_list', data=num) }}">DELETE</a>
+                                {% if duration[0] and duration[1] %}
+                                    <label class="leftItem">{{ duration[0] }}hr {{ duration[1] }}min</label>
+                                {% elif duration[0] %}
+                                    <label class="leftItem">{{ duration[0] }}hr</label>
+                                {% elif duration[1] %}
+                                    <label class="leftItem">{{ duration[1] }}min</label>
+                                {% endif %}
+                                <div class="leftItem durationPadding">
+                                    <div class="durationFlex">
+                                        <input type="text" class="inputField durationInput" name="duration_hour_{{ duration[2] }}">
+                                        <label class="durationLabel">Hour</label>
+                                    </div>
+                                    <div class="durationFlex">
+                                        <input type="text" class="inputField durationInput" name="duration_min_{{ duration[2] }}">
+                                        <label class="durationLabel">Minute</label>
+                                    </div>
+                                </div>
+                                <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='duration_list', data=duration[2]) }}">DELETE</a>
                             </div>    
                         {% endfor %}
                     {% endif %}

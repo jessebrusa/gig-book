@@ -120,8 +120,17 @@
                 {% endif %}
                 {% if venue_type_box %}
                     <div class="formRow">
-                        <label class="leftItem">Duration (min):</label>
-                        <input type="text" class="inputField" name="duration_">
+                        <label class="leftItem">Duration:</label>
+                        <div class="leftItem durationPadding">
+                            <div class="durationFlex">
+                                <input type="text" class="inputField durationInput" name="duration_hour_">
+                                <label class="durationLabel">Hour</label>
+                            </div>
+                            <div class="durationFlex">
+                                <input type="text" class="inputField durationInput" name="duration_min_">
+                                <label class="durationLabel">Minute</label>
+                            </div>
+                        </div>
                     </div>
                 {% endif %}
                 {% if date_price %}
