@@ -57,30 +57,39 @@ def edit_two_database(facility_object, request_name_one, request_name_two,
         request_data_one = request.form.get(request_name_one_id)
         request_data_two = request.form.get(request_name_two_id)
 
-    if request_data_one is None:
-        pass
-    elif len(request_data_one) == 0:
-        pass
-    elif request_data_one == 'None':
-        pass
-    else:
-        original_data_one = table.query.filter_by(id=data_id).first()
-        setattr(original_data_one, table_variation_one, request_data_one)
-
-    if request_data_two is None:
-        pass
-    elif len(request_data_two) == 0:
-        pass
-    else:
-        original_data_two = table.query.filter_by(id=data_id).first()
-        if ':' in request_data_two:
+        if '-' in str(request_data_two):
+            request_data_two = format_date(str(request_data_two))
+        elif ':' in str(request_data_two):
             request_data_two = format_time(request_data_two)
-        setattr(original_data_two, table_variation_two, request_data_two)
+
+        if request_data_one is None:
+            pass
+        elif len(request_data_one) == 0:
+            pass
+        elif request_data_one == 'None':
+            pass
+        else:
+            original_data_one = table.query.filter_by(id=data_id).first()
+            setattr(original_data_one, table_variation_one, request_data_one)
+
+        if request_data_two is None:
+            pass
+        elif len(request_data_two) == 0:
+            pass
+        else:
+            original_data_two = table.query.filter_by(id=data_id).first()
+            setattr(original_data_two, table_variation_two, request_data_two)
 
 
+def format_time(time):
+    time_object = datetime.strptime(time, '%H:%M')
+    return time_object.strftime('%I:%M %p')
 
 
-
+def format_date(date):
+    if '-' in date:
+        date_object = datetime.strptime(date, '%Y-%m-%d')
+        return date_object.strftime('%m/%d/%Y')
 
 def split_list(column):
     if column == None:
@@ -548,11 +557,6 @@ def last_item(list):
         return list[-1]
     else:
         return None
-
-
-def format_time(time):
-    time_object = datetime.strptime(time, '%H:%M')
-    return time_object.strftime('%I:%M %p')
 
 
 def split_break_day_time(list):

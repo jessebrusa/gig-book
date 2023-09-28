@@ -47,8 +47,12 @@
                     {{ form.zip_code(class_='inputField') }}
                 </div>
                 <div class="formRow">
+                    <label class="leftItem">Distance Time (Hour):</label>
+                    {{ form.distance_hour(class_='inputField') }}
+                </div>
+                <div class="formRow">
                     <label class="leftItem">Distance Time (min):</label>
-                    {{ form.distance_time(class_='inputField') }}
+                    {{ form.distance_min(class_='inputField') }}
                 </div>
                 <div class="formRow">
                     <label class="leftItem">Venue Type:</label>
@@ -130,16 +134,20 @@
                     </div>
                 </div>
                 <div class="formRow">
-                    <label class="leftItem">Duration (min):</label>
-                    {{ form.duration_list(class_='inputField') }}
+                    <label class="leftItem">Duration (Hour):</label>
+                    {{ form.duration_hour(class_='inputField') }}
                 </div>
                 <div class="formRow">
-                    <label class="leftItem">Date</label>
-                    {{ form.date(class_='dateCalendar') }}
+                    <label class="leftItem">Duration (min):</label>
+                    {{ form.duration_min(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Price Date</label>
+                    {{ form.price_date(class_='dateCalendar') }}
                 </div>
                 <div class="formRow">
                     <label class="leftItem">Price:</label>
-                    {{ form.price_list(class_='inputField') }}
+                    {{ form.price(class_='inputField') }}
                 </div>
                 <div class="formRow">
                     <label class="leftItem">Preferred Day:</label>
@@ -151,6 +159,10 @@
                 <div class="formRow">
                     <label class="leftItem">Feedback:</label>
                     {{ form.feedback_list(class_='dropdownOption') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Testimonial Date</label>
+                    {{ form.testimonial_date(class_='dateCalendar') }}
                 </div>
                 <div class="formRow">
                     <label class="leftItem">Testimonial:</label>

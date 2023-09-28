@@ -14,7 +14,7 @@ edit_mass_email_method, edit_data_method_break, set_list_form_submit, split_brea
 wtf_edit_data_market, marketing_list_form_submit, wtf_edit_method, wtf_edit_ckeditor, feedback_dates_values, \
 edit_data_date_method, testimonial_dates_values, wtf_edit_testimonial, generate_hash_salt, bible_url, params, \
 send_email_with_attachment, attachment_url, check_for_data_return_last, return_list, edit_database, \
-format_time, edit_two_database, return_table_list
+format_time, edit_two_database, return_table_list, format_date
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
@@ -47,22 +47,15 @@ class DataBase(db.Model):
     __tablename__ = 'database'
     id = db.Column(db.Integer, primary_key=True)
     facility = db.Column(db.String(250), nullable=False)
-    
     town = db.Column(db.String(250), nullable=False)
     street = db.Column(db.String(250), nullable=False)
     state = db.Column(db.String(250), nullable=False)
     zip_code = db.Column(db.String(250), nullable=False)
-
-    distance_time = db.Column(db.Integer, nullable=False)
- 
+    distance_hour = db.Column(db.Integer)
+    distance_min = db.Column(db.Integer)
     location_img_url = db.Column(db.String(250))
-
     mass_email = db.Column(db.Boolean)
-
     set_list = db.Column(db.String(250))
-
-    date_price_list = db.Column(db.String(250))
-
     date_feedback_list = db.Column(db.Text)
     date_testimonials_list = db.Column(db.Text) 
     comments_list = db.Column(db.Text)
@@ -75,6 +68,8 @@ class DataBase(db.Model):
     venue_type = db.relationship('VenueTypeTable')
     performance_type = db.relationship('PerformanceTypeTable')
     duration = db.relationship('DurationTable')
+    price_date = db.relationship('PriceDateTable')
+
 
 class ContactTable(db.Model):
     __tablename__ = 'contact_table'
@@ -130,6 +125,15 @@ class PreferredDayTimeTable(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     day = db.Column(db.String(250))
     time = db.Column(db.String(250))
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class PriceDateTable(db.Model):
+    __tablename__ = 'price_date_table'
+    id = db.Column(db.Integer, primary_key=True)
+    price = db.Column(db.Integer)
+    date = db.Column(db.String)
 
     data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
 
@@ -296,49 +300,14 @@ def form():
             location_img_url = f'../static/location_img/{file_string}{file_type}'
         else:
             location_img_url = None
+ 
 
-        if form.venue_type.data == 'None':
-            venue_type = None
-        else:
-            venue_type = form.venue_type.data
 
-        if form.performance_type.data != 'None':
-            performance_type = form.performance_type.data
-        else:
-            performance_type = None
-
-        if form.duration_list.data:
-            duration_hour_min = format_duration(form.duration_list.data)
-            duration_hour = duration_hour_min[0]
-            duration_min = duration_hour_min[1]
-        else:
-            duration_hour = None
-            duration_min = None
-
-        if form.date.data:
-            date = form.date.data
-        else:
-            date = None
+ 
         
         set_list_string = set_list_form_submit('no_field', 'no_field', form)
        
-
-        if form.price_list.data:
-            if date:
-                price_list = f"{date}|{form.price_list.data}"
-            else:
-                price_list = form.price_list.data
-        else:
-            price_list = None
-
-        if form.preferred_day.data != 'None':
-            preferred_day = form.preferred_day.data
-        else:
-            preferred_day = None
-        if request.form.get('time_'):
-            preferred_time = request.form.get('time_')
-        else:
-            preferred_time = None
+  
 
         if form.feedback_list.data != 'None':
             if date:
@@ -385,13 +354,8 @@ def form():
             for material in marketing_list_list[1:]:
                 market_list_string += '|'
                 market_list_string += material
-        if date:
-            market_list_string = f"{date}:{market_list_string}"
 
-        if form.date.data:
-            date = form.date.data
-        else:
-            date = None
+
 
         phone_string = str(form.phone_number.data)
         if ' ' in phone_string:
@@ -409,12 +373,12 @@ def form():
             town = form.town.data,
             street = form.street.data,
             zip_code = form.zip_code.data,
-            distance_time = form.distance_time.data,
+            distance_hour = form.distance_hour.data,
+            distance_min = form.distance_min.data,
             location_img_url = location_img_url,
             mass_email = form.mass_email.data,
             set_list = set_list_string,
             date_feedback_list = feedback,
-            date_price_list = price_list,
             date_testimonials_list = testimonials_list,
             comments_list = comments_list,
             date_marketing_list = market_list_string
@@ -452,29 +416,29 @@ def form():
             db.session.commit()
 
 
-        if preferred_day and preferred_time:
-            new_preferred_day_time = PreferredDayTimeTable(
-                day = preferred_day,
-                time = format_time(preferred_time),
-                data_base_id = new_entry.id
-            )
-        elif preferred_day:
-            new_preferred_day_time = PreferredDayTimeTable(
-                day = preferred_day,
-                data_base_id = new_entry.id
-            )
-        elif preferred_time:
-            new_preferred_day_time = PreferredDayTimeTable(
-                time = format_time(preferred_time),
-                data_base_id = new_entry.id
-            )
-        else:
-            new_preferred_day_time = None
-        if new_preferred_day_time:
-            db.session.add(new_preferred_day_time)
-            db.session.commit()
+        if form.preferred_day.data or form.preferred_time.data:
+            if form.preferred_day.data != 'None':
+                preferred_day = form.preferred_day.data
+            else:
+                preferred_day = None
+            if form.preferred_time.data:
+                preferred_time = format_time(preferred_time)
+            else:
+                preferred_time = None
+            if preferred_day or preferred_time:
+                new_preferred_day_time = PreferredDayTimeTable(
+                    day = preferred_day,
+                    time = preferred_time,
+                    data_base_id = new_entry.id
+                )
+                db.session.add(new_preferred_day_time)
+                db.session.commit()
 
-        if venue_type:
+        if form.venue_type.data:
+            if form.venue_type.data == 'None':
+                venue_type = None
+            else:
+                venue_type = form.venue_type.data
             new_venue = VenueTypeTable(
                 venue = venue_type,
                 data_base_id = new_entry.id
@@ -482,7 +446,11 @@ def form():
             db.session.add(new_venue)
             db.session.commit()
 
-        if performance_type:
+        if form.performance_type.data:
+            if form.performance_type.data != 'None':
+                performance_type = form.performance_type.data
+            else:
+                performance_type = None
             new_performance = PerformanceTypeTable(
                 performance = performance_type,
                 data_base_id = new_entry.id
@@ -491,15 +459,29 @@ def form():
             db.session.commit()
 
 
-        if duration_hour or duration_min:
+        if form.duration_hour.data or form.duration_min.data:
             new_duration = DurationTable(
-                hour = duration_hour,
-                minute = duration_min,
+                hour = form.duration_hour.data,
+                minute = form.duration_min.data,
                 data_base_id = new_entry.id
             )
             db.session.add(new_duration)
             db.session.commit()
 
+        if form.price.data or form.price_date.data:
+            if form.price_date.data:
+                price_date = format_date(str(form.price_date.data))
+            else:
+                price_date = None
+            new_price_date = PriceDateTable(
+                price = form.price.data,
+                date = price_date,
+                data_base_id = new_entry.id
+            )
+            db.session.add(new_price_date)
+            db.session.commit()
+
+    
 
         return redirect(url_for('facility_page', id=new_entry.id))
 
@@ -512,6 +494,9 @@ def facility_page(id):
     facility = DataBase.query.filter_by(id=id).first()
 
     contact_person = check_for_data_return_last(facility.contact_person, 'contact_person')
+
+    distance_hour = facility.distance_hour
+    distance_min = facility.distance_min
 
     phone_number = check_for_data_return_last(facility.phone_number, 'phone_number')
     phone_ext = ext_phone(phone_number)
@@ -527,8 +512,8 @@ def facility_page(id):
 
     day_time_list = [[day_time.day, day_time.time] for day_time in facility.preferred_day_time]
 
-    date_price_array = split_list(facility.date_price_list)
-    date_price_list = split_break_itemOne_itemTwo(date_price_array)  
+    price_date_list = [[price_date.price, price_date.date] for price_date in facility.price_date]
+
 
     comments_list = split_list(facility.comments_list)
     comments_list_length = list_length(comments_list)
@@ -547,13 +532,13 @@ def facility_page(id):
     testimonial_list = split_break_itemOne_itemTwo(testimonial_array)
     testimonial_list_length = list_length(testimonial_array)
 
-    return render_template('facility-page.html', facility=facility, date_price_list=date_price_list, set_list=set_list,
+    return render_template('facility-page.html', facility=facility, price_date_list=price_date_list, set_list=set_list,
                            market_date_list=market_date_list,contact_person=contact_person, id=id,
                            phone_number=phone_number, email=email, venue_type=venue_type, performance_type=performance_type, 
                            day_time_list=day_time_list,comments_list=comments_list, duration_list=duration_list,
                            comments_list_length=comments_list_length,feedback_list=feedback_list, feedback_list_length=feedback_list_length ,
                            testimonial_list=testimonial_list, testimonial_list_length=testimonial_list_length , phone_string=phone_string, 
-                           phone_ext=phone_ext)
+                           phone_ext=phone_ext, distance_hour=distance_hour, distance_min=distance_min)
 
 
 @app.route('/add/<int:id>/<field>', methods=['GET', 'POST'])
@@ -561,7 +546,8 @@ def facility_page(id):
 def add_data(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
-    
+
+    location_img = compare_field('image', field)
     contact_person = compare_field('contact_person', field)
     phone_number = compare_field('phone_number', field)
     email = compare_field('email', field)
@@ -578,7 +564,7 @@ def add_data(id, field):
                            preferred_day_time=preferred_day_time, date_price=date_price, comments=comments,
                            feedback=feedback, testimonial=testimonial, market_date=market_date, field=field,
                            venue_type_list=venue_type_list, performance_type_list=performance_type_list, 
-                           weekdays=weekdays, feedback_list_items=feedback_list_items)
+                           weekdays=weekdays, feedback_list_items=feedback_list_items, location_img=location_img)
 
 
 @app.route('/commit-add/<int:id>/<field>', methods=['GET', 'POST'])
@@ -597,7 +583,7 @@ def commit_add_data(id, field):
             db.session.add(new_contact)
         
 
-        image_file_string_type = image_url('location_img', field, 'location_img_new', facility.location_img_url)
+        image_file_string_type = image_url('image', field, 'location_img_new', facility)
         if image_file_string_type:
             image_file_string_type[0].save(os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                 app.config['UPLOAD_FOLDER'],
@@ -656,34 +642,34 @@ def commit_add_data(id, field):
         if field == 'preferred_day_time':
             day = request.form.get('preferred_day_')
             time = request.form.get('time_')
-            if day and time:
+            if time:
+                time = format_time(time)
+            if day or time:
                 new_preferred_day_time = PreferredDayTimeTable(
                     day = day,
-                    time = format_time(time),
+                    time = time,
                     data_base_id = id
                 )
-            elif day:
-                new_preferred_day_time = PreferredDayTimeTable(
-                    day = day,
-                    data_base_id = id
-                )
-            elif time:
-                new_preferred_day_time = PreferredDayTimeTable(
-                    time = format_time(time),
-                    data_base_id = id
-                )
-            else:
-                new_preferred_day_time = None
-            if new_preferred_day_time:
                 db.session.add(new_preferred_day_time)
                 db.session.commit()
                    
 
-        new_date_price = add_date_item_method('date_price', field,
-                                              'date_', 'price_',
-                                              facility.date_price_list)
-        if new_date_price:
-            facility.date_price_list = new_date_price
+        if field == 'date_price':
+            if request.form.get('date_'):
+                price_date = format_date(str(request.form.get('date_')))
+            else:
+                price_date = None
+            if len(request.form.get('price_')) == 0:
+                pass
+            else:
+                new_price_date = PriceDateTable(
+                    price = request.form.get('price_'),
+                    date = price_date,
+                    data_base_id = id,
+                )
+                db.session.add(new_price_date)
+                db.session.commit()
+
 
 
         new_market_date = market_date_method('market_date', field, 
@@ -728,8 +714,13 @@ def edit_field(id, field):
     else:
         contacts = None
 
+    if 'distance_time' == field:
+        distance_hour = facility.distance_hour
+        distance_min = facility.distance_min
+    else:
+        distance_hour = None
+        distance_min = None
 
-    distance_time = last_item(compare_field_return_data('distance_time', field, str(facility.distance_time)))
     location_img = compare_field_return_data('location_img', field, facility.location_img_url)
     address = compare_field_address('address', field, facility.street, facility.town,
                                     facility.state, facility.zip_code)
@@ -764,9 +755,12 @@ def edit_field(id, field):
         duration_list = None
 
 
-    date_price_array = compare_field_return_data('date_price', field, facility.date_price_list)
-    date_price_list = split_break_date_item(date_price_array)   
-    date_price_list_len = list_length(date_price_list)
+    if 'date_price' == field:
+        price_date_list = [[price_date.price, price_date.date, price_date.id] for price_date in facility.price_date]
+    else:
+        price_date_list = None
+
+
     set_list = compare_field('set_list', field) 
     set_list_array = split_break(facility.set_list)
     date_market = compare_field_return_data('market_date', field, facility.date_marketing_list)
@@ -802,11 +796,11 @@ def edit_field(id, field):
 
 
     return render_template('edit-field.html', id=id, facility=facility, form=form, field=field, venue=venue, contacts=contacts,
-                           distance_time=distance_time,
+                           distance_hour=distance_hour, distance_min=distance_min,
                            phone_numbers=phone_numbers, location_img=location_img, address=address, emails=emails, mass_email=mass_email, days_times=days_times,
                            venue_types=venue_types, venue_type_list=venue_type_list, performance_types=performance_types,
-                           performance_type_list=performance_type_list, duration_list=duration_list, venue_box=venue_box, date_price_list=date_price_list,
-                           weekdays=weekdays, date_price_list_len=date_price_list_len,
+                           performance_type_list=performance_type_list, duration_list=duration_list, venue_box=venue_box, price_date_list=price_date_list,
+                           weekdays=weekdays, 
                            set_list=set_list, set_list_array=set_list_array, date_market=date_market, date_market_len=date_market_len, date_market_labels=date_market_labels,
                            date_market_values=date_market_values, comments=comments, comments_len=comments_len, feedback=feedback, feedback_len=feedback_len,
                            feedback_list_items=feedback_list_items, feedback_dates=feedback_dates, feedback_values=feedback_values, testimonials_list=testimonials_list,
@@ -824,17 +818,16 @@ def commit_edit(id, field):
         edit_facility = edit_data_method('facility', field, facility.facility, 'facility_')
         if edit_facility:
             facility.facility = edit_facility
-            
 
 
         if field == 'contact_person':
             edit_database(facility.contact_person, 'contact_', ContactTable, 'contact_person')
 
 
-        edit_distance_time = edit_data_method('distance_time', field, 
-                                              facility.distance_time, 'distance_time_')
-        if edit_distance_time:
-            facility.distance_time = edit_distance_time
+        if field == 'distance_time':
+            if request.form.get('distance_hour_') or request.form.get('distance_min_'):
+                facility.distance_hour = request.form.get('distance_hour_')
+                facility.distance_min = request.form.get('distance_min_')
 
 
         edit_img_file_string_type = image_url('location_img', field,
@@ -880,11 +873,9 @@ def commit_edit(id, field):
                           'hour', 'minute')
 
 
-        edit_date_price = edit_data_method_break('date_price', field,
-                                                 facility.date_price_list,
-                                                 'date_', 'price_')
-        if edit_date_price:
-            facility.date_price_list = edit_date_price
+        if field == 'date_price':
+            edit_two_database(facility.price_date, 'price_', 'date_', PriceDateTable, 
+                              'price', 'date')
   
 
         edit_set_list = set_list_form_submit('set_list', field, form)
@@ -1045,6 +1036,7 @@ def delete_data(id, field, data):
     if field == 'performance_type':
         delete_performance = PerformanceTypeTable.query.filter_by(id=data).first()
         db.session.delete(delete_performance)
+        db.session.commit()
 
     if field == 'duration_list':
         delete_duration = DurationTable.query.filter_by(id=data).first()
@@ -1057,16 +1049,12 @@ def delete_data(id, field, data):
             return redirect(url_for('facility_page', id=id))
 
 
-    delete_date_price = delete_data_method('date_price', field,
-                                           facility.date_price_list,
-                                           data, False)
-    if delete_date_price:
-        if delete_date_price == 'None':
-            facility.date_price_list = None
+    if field == 'date_price':
+        delete_price_date = PriceDateTable.query.filter_by(id=data).first()
+        db.session.delete(delete_price_date)
+        if return_table_list(facility.price_date) is None:
             db.session.commit()
             return redirect(url_for('facility_page', id=id))
-        else:
-            facility.date_price_list = delete_date_price
 
 
     delete_date_market = delete_data_method('market_date', field,

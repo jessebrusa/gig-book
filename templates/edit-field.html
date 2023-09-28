@@ -27,10 +27,22 @@
                         <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='contact_person', data=contact.id) }}">DELETE</a>
                     {% endfor %}
                 {% endif %}
-                {% if distance_time %}
+                {% if distance_hour or distance_min %}
                     <div class="formRow">
-                        <label class="leftItem">{{ distance_time }} (mins):</label>
-                        <input type="text" class="inputField" name="distance_time_">
+                        {% if distance_hour %}
+                            <label class="leftItem">{{ distance_hour }}hr:</label>
+                        {% else %}
+                            <label class="leftItem">0hr:</label>
+                        {% endif %}
+                        <input type="text" class="inputField" name="distance_hour_">
+                    </div>
+                    <div class="formRow">
+                        {% if distance_min %}
+                            <label class="leftItem">{{ distance_min }}min:</label>
+                        {% else %}
+                            <label class="leftItem">0min:</label>
+                        {% endif %}
+                        <input type="text" class="inputField" name="distance_min_">
                     </div>
                 {% endif %}
                 {% if location_img %}
@@ -159,27 +171,28 @@
                     {% if duration_list %}
                         <label class="venueHeading"><u>Duration:</u></label>
                         {% for duration in duration_list %}
-                            <div class="formRow">
-                                {% if duration[0] and duration[1] %}
-                                    <label class="leftItem">{{ duration[0] }}hr {{ duration[1] }}min</label>
-                                {% elif duration[0] %}
-                                    <label class="leftItem">{{ duration[0] }}hr</label>
-                                {% elif duration[1] %}
-                                    <label class="leftItem">{{ duration[1] }}min</label>
-                                {% endif %}
-                                <div class="leftItem durationPadding">
-                                    <div class="durationFlex">
-                                        <input type="text" class="inputField durationInput" name="duration_hour_{{ duration[2] }}">
-                                        <label class="durationLabel">Hour</label>
+                            <div class="durationContainer">
+                                <div>
+                                    <div class="formRow paddingTopBottom">
+                                        {% if duration[0] %}
+                                            <label class="leftItem">{{ duration[0] }}hr:</label>
+                                        {% else %}
+                                            <label class="leftItem">0hr:</label>
+                                        {% endif %}
+                                        <input type="text" class="inputField" name="duration_hour_{{ duration[2] }}">
                                     </div>
-                                    <div class="durationFlex">
-                                        <input type="text" class="inputField durationInput" name="duration_min_{{ duration[2] }}">
-                                        <label class="durationLabel">Minute</label>
+                                    <div class="formRow paddingTopBottom">
+                                        {% if duration[1] %}
+                                            <label class="leftItem">{{ duration[1] }}min:</label>
+                                        {% else %}
+                                            <label class="leftItem">0min:</label>
+                                        {% endif %}
+                                        <input type="text" class="inputField" name="duration_min_{{ duration[2] }}">
                                     </div>
                                 </div>
                                 <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='duration_list', data=duration[2]) }}">DELETE</a>
-                            </div>    
-                        {% endfor %}
+                            </div>
+                            {% endfor %}
                     {% endif %}
                 {% endif %}
                 {% if set_list %}
@@ -362,17 +375,17 @@
                         {{ form.duration_list(class_='inputField') }}
                     </div>
                 {% endif %}
-                {% if date_price_list %}
-                    {% for num in range(date_price_list_len) %}    
+                {% if price_date_list %}
+                    {% for price_date in price_date_list %}    
                         <div class="formRow">
-                            <label class="leftItem">{{ date_price_list[num][0] }}:</label>
-                            <input type="date" class="dateCalendar" name="date_{{ num }}">
+                            <label class="leftItem">{{ price_date[1] }}:</label>
+                            <input type="date" class="dateCalendar" name="date_{{ price_date[2] }}">
                         </div>
                         <div class="formRow">
-                            <label class="leftItem">${{ date_price_list[num][1] }}:</label>
-                            <input type="text" class="inputField"  name="price_{{ num }}">
+                            <label class="leftItem">${{ price_date[0] }}:</label>
+                            <input type="text" class="inputField"  name="price_{{ price_date[2] }}">
                         </div>
-                        <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='date_price', data=num) }}">DELETE</a>
+                        <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='date_price', data=price_date[2]) }}">DELETE</a>
                     {% endfor %}
                 {% endif %}
                 {% if feedback %}

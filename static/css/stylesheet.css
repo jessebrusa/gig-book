@@ -869,22 +869,14 @@ p {
     height: 200px;
 }
 
-.durationPadding {
-    padding: 30px;
-}
-
-.durationFlex {
+.durationContainer {
     display: flex;
-    justify-content: center;
+    align-items: center;
 }
 
-.durationLabel {
-    text-align: center;
-    width: 100px;
-}
-
-.durationInput {
-    width: 170px;
+.paddingTopBottom {
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 @media only screen and (max-width: 1200px) {

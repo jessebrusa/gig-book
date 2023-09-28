@@ -17,6 +17,12 @@
                         <input type="text" class="inputField" name="contact_person_">
                     </div>
                 {% endif %}
+                {% if location_img %}
+                    <div class="formRow">
+                        <label class="leftItem">Choose a new image:</label>
+                        <input type="file" class="inputField" name="location_img_new">
+                    </div>
+                {% endif %}
                 {% if phone_number %}
                     <div class="formRow">
                         <label class="leftItem">Phone Number:</label>
@@ -119,19 +125,14 @@
                     </div>
                 {% endif %}
                 {% if venue_type_box %}
-                    <div class="formRow">
-                        <label class="leftItem">Duration:</label>
-                        <div class="leftItem durationPadding">
-                            <div class="durationFlex">
-                                <input type="text" class="inputField durationInput" name="duration_hour_">
-                                <label class="durationLabel">Hour</label>
-                            </div>
-                            <div class="durationFlex">
-                                <input type="text" class="inputField durationInput" name="duration_min_">
-                                <label class="durationLabel">Minute</label>
-                            </div>
-                        </div>
-                    </div>
+                <div class="formRow">
+                    <label class="leftItem">duration hr:</label>
+                    <input type="text" class="inputField" name="duration_hour_">
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">duration min:</label>
+                    <input type="text" class="inputField" name="duration_min_">
+                </div>
                 {% endif %}
                 {% if date_price %}
                     <div class="formRow">

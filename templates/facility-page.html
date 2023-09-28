@@ -16,14 +16,20 @@
                 </div>
             </div>
             <div class="editAddContainer distanceTime">
-                <h3>Distance Time: {{ facility.distance_time }} (mins)</h3>
+                {% if distance_hour and distance_min %}
+                    <h3>Distance Time: {{ distance_hour }}hr {{ distance_min }}min</h3>
+                {% elif distance_hour %}
+                    <h3>Distance Time: {{ distance_hour }}hr</h3>
+                {% elif distance_min %}
+                    <h3>Distance Time: {{ distance_min }}min</h3>
+                {% endif %}
                 <div class="editAddBtn">
                     <a href="{{ url_for('edit_field', id=facility.id, field='distance_time') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
                 </div>
             </div>
         {% if not facility.location_img_url %}
             <div class="editAddContainer h4Container">
-                <a href="{{ url_for('add_data', id=facility.id, field='image') }}"><h4>Add Image</h2></a>
+                <a href="{{ url_for('add_data', id=facility.id, field='image') }}"><h4>Add Image</h4></a>
                 <div class="editAddBtn h4Add">
                     <a href="{{ url_for('add_data', id=facility.id, field='image') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add" class="h4Add"></a>
                 </div>
@@ -128,9 +134,11 @@
                 <div class="venueContainer venueSpace">
                     <h2 class="venueH2"><u>Venue Type:</u></h2>
                     <div class="venueItems">
-                        {% for venue in venue_type %}
-                            <h3>{{ venue }}</h2>
-                        {% endfor %}
+                        {% if venue_type[0] %}
+                            {% for venue in venue_type %}
+                                <h3>{{ venue }}</h2>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
             {% else %}
@@ -140,9 +148,11 @@
                 <div class="venueContainer">
                     <h2 class="venueH2"><u>Performance Type:</u></h2>
                     <div class="venueItems">
-                        {% for performance in performance_type %}
-                            <h3>{{ performance }}</h2>
-                        {% endfor %}
+                        {% if performance_type[0] %}
+                            {% for performance in performance_type %}
+                                <h3>{{ performance }}</h2>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
             {% else %}
@@ -168,7 +178,7 @@
             {% endif %}
         </div>
         <div class="row3Div">
-            {% if date_price_list %}
+            {% if price_date_list %}
                 <div class="editAddBtn marginUpNeg">
                     <a href="{{ url_for('edit_field', id=facility.id, field='date_price') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
                     <a href="{{ url_for('add_data', id=facility.id, field='date_price') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
@@ -178,13 +188,13 @@
                     <a href="{{ url_for('add_data', id=facility.id, field='date_price') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
                 </div>
             {% endif %}
-            {% if date_price_list %}
+            {% if price_date_list %}
                 <h2><u>Date Price:</u></h2>
-                {% for item in date_price_list %}
+                {% for item in price_date_list %}
                     {% if item[0] and item[1] %}
-                        <h2>{{ item[0] }}: ${{ item[1] }}</h2>
-                    {% elif item[1] %}
-                        <h2>${{ item[1] }}</h2>
+                        <h2>{{ item[1] }}: ${{ item[0] }}</h2>
+                    {% elif item[0] %}
+                        <h2>${{ item[0] }}</h2>
                     {% endif %}
                 {% endfor %}
             {% else %}

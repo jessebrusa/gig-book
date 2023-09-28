@@ -47,7 +47,8 @@ class AddressBookForm(FlaskForm):
     street = StringField('Street', validators=[DataRequired()])
     zip_code = StringField('Zip Code', validators=[DataRequired()])
     phone_number = StringField('Phone Number', validators=[DataRequired()])
-    distance_time = IntegerField('Distance Time',  validators=[DataRequired()])
+    distance_hour = IntegerField('Distance Time Hour')
+    distance_min = IntegerField('Distance Time Minute')
     venue_type = SelectField('Venue Type', choices=[('None')] + venue_type_list, default='None', validators=[DataRequired()])
 
     location_img_url = FileField('Choose File')
@@ -71,12 +72,14 @@ class AddressBookForm(FlaskForm):
     set_list_worship = BooleanField("Worship")
     set_list_hymns = BooleanField("Hymns")
 
-    duration_list = IntegerField("Duration")
-    date = DateField('Date')
-    price_list = IntegerField('Price')
+    duration_hour = IntegerField("Duration Hour")
+    duration_min = IntegerField("Duration Minute")
+    price_date = DateField('Date')
+    price = IntegerField('Price')
     preferred_day = SelectField('Preferred Day', choices=[('None')] + weekdays, default='None')
     preferred_time = TimeField('Preferred Time')
     feedback_list = SelectField('Feedback_list', choices=[('None')] + feedback_list_items, default='None')
+    testimonial_date = DateField('Testimonial Date')
     testimonials_list = CKEditorField('Testimonials')
     comments_list = CKEditorField('Comments')
     
