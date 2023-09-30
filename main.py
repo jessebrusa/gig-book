@@ -1,9 +1,8 @@
-from flask import Flask, render_template, redirect, url_for, \
-    flash, request, abort
+from flask import Flask, render_template, redirect, url_for, request
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from form import AddressBookForm, weekdays, venue_type_list, performance_type_list, \
-    feedback_list_items, LoginForm, MassEmailForm
+feedback_list_items, LoginForm, MassEmailForm
 from resources import split_list, ext_phone, phone_to_string, format_duration, \
 split_break_day_time, split_break_itemOne_itemTwo, split_break, list_length, \
 split_colon_market_date, compare_field, add_data_method, last_item, image_url, \
@@ -14,19 +13,15 @@ edit_mass_email_method, edit_data_method_break, set_list_form_submit, split_brea
 wtf_edit_data_market, marketing_list_form_submit, wtf_edit_method, wtf_edit_ckeditor, feedback_dates_values, \
 edit_data_date_method, testimonial_dates_values, wtf_edit_testimonial, generate_hash_salt, bible_url, params, \
 send_email_with_attachment, attachment_url, check_for_data_return_last, return_list, edit_database, \
-format_time, edit_two_database, return_table_list, format_date
-
-from werkzeug.security import generate_password_hash, check_password_hash
+format_time, edit_two_database, return_table_list, format_date, marketing_form_submit, remove_unwanted_char_phone
+from werkzeug.security import check_password_hash
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Table, Column, Integer, ForeignKey, String, Boolean
 from flask_login import UserMixin, login_user, LoginManager, \
-login_required, current_user, logout_user
+current_user, logout_user
 from functools import wraps
 from werkzeug.utils import secure_filename
-from datetime import datetime
 import requests
 import os
-import math
 
 
 app = Flask(__name__)
@@ -55,11 +50,9 @@ class DataBase(db.Model):
     distance_min = db.Column(db.Integer)
     location_img_url = db.Column(db.String(250))
     mass_email = db.Column(db.Boolean)
-    set_list = db.Column(db.String(250))
     date_feedback_list = db.Column(db.Text)
     date_testimonials_list = db.Column(db.Text) 
     comments_list = db.Column(db.Text)
-    date_marketing_list = db.Column(db.String(250))
 
     contact_person = db.relationship('ContactTable')
     email = db.relationship('EmailTable')
@@ -69,6 +62,8 @@ class DataBase(db.Model):
     performance_type = db.relationship('PerformanceTypeTable')
     duration = db.relationship('DurationTable')
     price_date = db.relationship('PriceDateTable')
+    setlist = db.relationship('SetlistTable')
+    marketing = db.relationship('MarketingTable')
 
 
 class ContactTable(db.Model):
@@ -134,6 +129,23 @@ class PriceDateTable(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     price = db.Column(db.Integer)
     date = db.Column(db.String)
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class SetlistTable(db.Model):
+    __tablename__ = 'setlist_table'
+    id = db.Column(db.Integer, primary_key=True)
+    setlist = db.Column(db.String(250))
+    
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class MarketingTable(db.Model):
+    __tablename__ = 'marketing_table'
+    id = db.Column(db.Integer, primary_key=True)
+    material = db.Column(db.String(250))
+    date = db.Column(db.String(250))
 
     data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
 
@@ -300,13 +312,6 @@ def form():
             location_img_url = f'../static/location_img/{file_string}{file_type}'
         else:
             location_img_url = None
- 
-
-
- 
-        
-        set_list_string = set_list_form_submit('no_field', 'no_field', form)
-       
   
 
         if form.feedback_list.data != 'None':
@@ -329,43 +334,7 @@ def form():
             comments_list = form.comments_list.data
         else:
             comments_list = None
-        
-        marketing_list_list = []
-        market_list_string = ''
-        if form.marketing_list_physical_flyer.data:
-            marketing_list_list.append('Physical Flyer')
-        if form.marketing_list_electronic_flyer.data:
-            marketing_list_list.append('electronic Flyer')
-        if form.marketing_list_physical_business_card.data:
-            marketing_list_list.append('Physical Business Card')
-        if form.marketing_list_epk.data:
-            marketing_list_list.append('EPK')
-        if form.marketing_list_chocolate.data:
-            marketing_list_list.append('Chocolate')
-        if form.marketing_list_video_clip.data:
-            marketing_list_list.append('Video Clip')
-
-        if len(marketing_list_list) == 0:
-            market_list_string = None
-        elif len(marketing_list_list) == 1:
-            market_list_string += marketing_list_list[0]
-        else:
-            market_list_string += marketing_list_list[0]
-            for material in marketing_list_list[1:]:
-                market_list_string += '|'
-                market_list_string += material
-
-
-
-        phone_string = str(form.phone_number.data)
-        if ' ' in phone_string:
-            phone_string = phone_string.replace(' ', '')
-        if '(' in phone_string:
-            phone_string = phone_string.replace('(', '')
-        if ')' in phone_string:
-            phone_string = phone_string.replace(')', '')
-
-        
+              
 
         new_entry = DataBase(
             facility = form.facility.data,
@@ -377,11 +346,9 @@ def form():
             distance_min = form.distance_min.data,
             location_img_url = location_img_url,
             mass_email = form.mass_email.data,
-            set_list = set_list_string,
             date_feedback_list = feedback,
             date_testimonials_list = testimonials_list,
             comments_list = comments_list,
-            date_marketing_list = market_list_string
         )
 
         db.session.add(new_entry)
@@ -406,8 +373,8 @@ def form():
             db.session.add(new_email)
             db.session.commit()
 
-
-        if phone_string:
+        if form.phone_number.data:
+            phone_string = remove_unwanted_char_phone(form.phone_number.data)
             new_phone_number = PhoneNumberTable(
                 phone_number = phone_string,
                 data_base_id = new_entry.id
@@ -481,7 +448,32 @@ def form():
             db.session.add(new_price_date)
             db.session.commit()
 
-    
+        setlist_list = set_list_form_submit(form)
+        if setlist_list:
+            for item in setlist_list:
+                new_setlist = SetlistTable(
+                    setlist = item,
+                    data_base_id = new_entry.id
+                )
+                db.session.add(new_setlist)
+                db.session.commit()
+
+        marketing_list_date = marketing_form_submit(form)
+        if marketing_list_date:
+            marketing_list = marketing_list_date[0]
+            if marketing_list_date[1]:
+                date = marketing_list_date[1]
+            else:
+                date = None
+            for item in marketing_list:
+                new_marketing = MarketingTable(
+                    material = item,
+                    date = date,
+                    data_base_id = new_entry.id
+                )
+                db.session.add(new_marketing)
+                db.session.commit()
+
 
         return redirect(url_for('facility_page', id=new_entry.id))
 
@@ -518,11 +510,21 @@ def facility_page(id):
     comments_list = split_list(facility.comments_list)
     comments_list_length = list_length(comments_list)
 
-    set_list = split_break(facility.set_list)
+    setlist = return_list(facility.setlist, 'setlist')
+    if setlist:
+        setlist = sorted(setlist)
+        
 
-    market_date_array = split_list(facility.date_marketing_list)
-    market_date_list = split_colon_market_date(market_date_array)
+    # market_date_list = [[item.material, item.date] for item in facility.marketing]
+    market_date_table = return_list(facility.marketing, date)
+    market_date_list = []
+    for date in market_date_table:
+        material_list = [date]
+        for item in facility.marketing:
+            if date == item.date:
+                material_list.append(item.material)
 
+  
     feedback_array = split_list(facility.date_feedback_list)
     feedback_list = split_break_itemOne_itemTwo(feedback_array)
     feedback_list_length = list_length(feedback_array)
@@ -532,7 +534,7 @@ def facility_page(id):
     testimonial_list = split_break_itemOne_itemTwo(testimonial_array)
     testimonial_list_length = list_length(testimonial_array)
 
-    return render_template('facility-page.html', facility=facility, price_date_list=price_date_list, set_list=set_list,
+    return render_template('facility-page.html', facility=facility, price_date_list=price_date_list, setlist=setlist,
                            market_date_list=market_date_list,contact_person=contact_person, id=id,
                            phone_number=phone_number, email=email, venue_type=venue_type, performance_type=performance_type, 
                            day_time_list=day_time_list,comments_list=comments_list, duration_list=duration_list,
@@ -760,9 +762,13 @@ def edit_field(id, field):
     else:
         price_date_list = None
 
+    if 'set_list' == field:
+        setlist = return_list(facility.setlist, 'setlist')
+        setlist_true = True 
+    else:
+        setlist = None
+        setlist_true = None
 
-    set_list = compare_field('set_list', field) 
-    set_list_array = split_break(facility.set_list)
     date_market = compare_field_return_data('market_date', field, facility.date_marketing_list)
     if date_market:
         date_market_labels = split_break_dates(date_market)[0]
@@ -796,12 +802,12 @@ def edit_field(id, field):
 
 
     return render_template('edit-field.html', id=id, facility=facility, form=form, field=field, venue=venue, contacts=contacts,
-                           distance_hour=distance_hour, distance_min=distance_min,
+                           distance_hour=distance_hour, distance_min=distance_min, setlist_true=setlist_true,
                            phone_numbers=phone_numbers, location_img=location_img, address=address, emails=emails, mass_email=mass_email, days_times=days_times,
                            venue_types=venue_types, venue_type_list=venue_type_list, performance_types=performance_types,
                            performance_type_list=performance_type_list, duration_list=duration_list, venue_box=venue_box, price_date_list=price_date_list,
                            weekdays=weekdays, 
-                           set_list=set_list, set_list_array=set_list_array, date_market=date_market, date_market_len=date_market_len, date_market_labels=date_market_labels,
+                           setlist=setlist, date_market=date_market, date_market_len=date_market_len, date_market_labels=date_market_labels,
                            date_market_values=date_market_values, comments=comments, comments_len=comments_len, feedback=feedback, feedback_len=feedback_len,
                            feedback_list_items=feedback_list_items, feedback_dates=feedback_dates, feedback_values=feedback_values, testimonials_list=testimonials_list,
                            testimonial_dates=testimonial_dates, testimonial_values=testimonial_values, testimonials_list_len=testimonials_list_len)
@@ -878,11 +884,33 @@ def commit_edit(id, field):
                               'price', 'date')
   
 
-        edit_set_list = set_list_form_submit('set_list', field, form)
-        if edit_set_list == 'empty':
-            facility.set_list = None
-        elif edit_set_list:
-            facility.set_list = edit_set_list
+        if field == 'set_list':
+            original_list = return_list(facility.setlist, 'setlist')
+            original_list_table = return_table_list(facility.setlist)
+            new_setlist_list = set_list_form_submit(form)
+            if new_setlist_list:
+                new_item = [item for item in new_setlist_list if item not in original_list]
+                if new_item:
+                    for item in new_item:
+                        new_setlist = SetlistTable(
+                            setlist = item,
+                            data_base_id = id,
+                        )
+                        db.session.add(new_setlist)
+                        db.session.commit()
+                delete_item = [item.id for item in original_list_table if item.setlist not in new_setlist_list]
+                if delete_item:
+                    for item in delete_item:
+                        delete_setlist = SetlistTable.query.filter_by(id=item).first()
+                        db.session.delete(delete_setlist)
+                        db.session.commit()
+            else:
+                delete_item = [item.id for item in original_list_table]
+                for item in delete_item:
+                    delete_setlist = SetlistTable.query.filter_by(id=item).first()
+                    db.session.delete(delete_setlist)
+                    db.session.commit()
+
 
 
         edit_feedback = edit_data_date_method('feedback', field, 

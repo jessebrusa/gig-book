@@ -205,12 +205,16 @@
     <div class="row4">
         <div class="row4Container">
             <div class="editAddBtn marginUpNeg">
-                <a href="{{ url_for('edit_field', id=facility.id, field='set_list') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                {% if setlist %}
+                    <a href="{{ url_for('edit_field', id=facility.id, field='set_list') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
+                {% else %}
+                    <a href="{{ url_for('edit_field', id=facility.id, field='set_list') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
+                {% endif %}
             </div>
             <h2><u>Setlist</u></h2>
             <div class="row4Set">  
-                {% if facility.set_list %}
-                    {% for set in set_list %}
+                {% if setlist %}
+                    {% for set in setlist %}
                         <h2>{{ set }}</h2>
                     {% endfor %}
                 {% endif %}
@@ -232,13 +236,11 @@
                     {% if market_date_list %}
                         {% for date_market in market_date_list %}
                             <div class="marketDateItems">
-                                {% if date_market[0] %}
-                                    <h2><u>{{ date_market[0] }}</u></h2>
-                                {% endif %}
                                 {% if date_market[1] %}
-                                    {% for market in date_market[1] %}
-                                        <h2>{{ market }}</h2>
-                                    {% endfor %}
+                                    <h2><u>{{ date_market[1] }}</u></h2>
+                                {% endif %}
+                                {% if date_market[0] %}
+                                    <h2>{{ date_market[0] }}</h2>
                                 {% endif %}
                             </div>  
                         {% endfor %}

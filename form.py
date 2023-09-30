@@ -2,9 +2,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, \
     EmailField, SelectField, IntegerField, FileField, BooleanField, \
     DateField, TimeField, TextAreaField
-from wtforms.validators import DataRequired, URL
+from wtforms.validators import DataRequired
 from flask_ckeditor import CKEditorField
-from datetime import time
+
 
 states = [ ('AK'), ('AL'), ('AR'), ('AZ'), ('CA'), ('CO'), ('CT'), ('DC'), ('DE'), ('FL'), ('GA'),
            ('HI'), ('IA'), ('ID'), ('IL'), ('IN'), ('KS'), ('KY'), ('LA'), ('MA'), ('MD'), ('ME'),
@@ -83,6 +83,7 @@ class AddressBookForm(FlaskForm):
     testimonials_list = CKEditorField('Testimonials')
     comments_list = CKEditorField('Comments')
     
+    marketing_date = DateField('Date')
     marketing_list_physical_flyer = BooleanField('Physical Flyer')
     marketing_list_electronic_flyer = BooleanField('Electronic Flyer')
     marketing_list_physical_business_card = BooleanField('Physical Business Card')

@@ -91,6 +91,77 @@ def format_date(date):
         date_object = datetime.strptime(date, '%Y-%m-%d')
         return date_object.strftime('%m/%d/%Y')
 
+
+def set_list_form_submit(form):
+    set_list_list = []
+    if form.set_list_30.data:
+        set_list_list.append("30's")
+    if form.set_list_40.data:
+        set_list_list.append("40's")
+    if form.set_list_50.data:
+        set_list_list.append("50's")
+    if form.set_list_60.data:
+        set_list_list.append("60's")
+    if form.set_list_70.data:
+        set_list_list.append("70's")
+    if form.set_list_80.data:
+        set_list_list.append("80's")
+    if form.set_list_90.data:
+        set_list_list.append("90's")
+    if form.set_list_2000.data:
+        set_list_list.append("2000's")
+    if form.set_list_present.data:
+        set_list_list.append("Present")
+    if form.set_list_outreach.data:
+        set_list_list.append("Outreach")
+    if form.set_list_christian.data:
+        set_list_list.append("Christian")
+    if form.set_list_secular.data:
+        set_list_list.append("Secular")
+    if form.set_list_originals.data:
+        set_list_list.append("Originals")
+    if form.set_list_worship.data:
+        set_list_list.append("Worship")
+    if form.set_list_hymns.data:
+        set_list_list.append("Hymns")
+
+    return set_list_list
+
+
+def marketing_form_submit(form):
+    date = form.marketing_date.data
+
+    marketing_list = []
+    if form.marketing_list_physical_flyer.data:
+        marketing_list.append('Physical Flyer')
+    if form.marketing_list_electronic_flyer.data:
+        marketing_list.append('electronic Flyer')
+    if form.marketing_list_physical_business_card.data:
+        marketing_list.append('Physical Business Card')
+    if form.marketing_list_epk.data:
+        marketing_list.append('EPK')
+    if form.marketing_list_chocolate.data:
+        marketing_list.append('Chocolate')
+    if form.marketing_list_video_clip.data:
+        marketing_list.append('Video Clip')
+
+    return [marketing_list, date]
+
+
+def remove_unwanted_char_phone(phone_number):
+    phone_string = str(phone_number)
+    if ' ' in phone_string:
+        phone_string = phone_string.replace(' ', '')
+    if '(' in phone_string:
+        phone_string = phone_string.replace('(', '')
+    if ')' in phone_string:
+        phone_string = phone_string.replace(')', '')
+    return phone_string
+
+
+
+
+
 def split_list(column):
     if column == None:
         return None
@@ -679,54 +750,6 @@ def edit_mass_email_method(correct_field, field):
             return 'True'
         else:
             return 'False'
-
-
-def set_list_form_submit(correct_field, field, form):
-    if correct_field == field:
-        set_list_list = []
-        set_list_string = ''
-        if form.set_list_30.data:
-            set_list_list.append("30's")
-        if form.set_list_40.data:
-            set_list_list.append("40's")
-        if form.set_list_50.data:
-            set_list_list.append("50's")
-        if form.set_list_60.data:
-            set_list_list.append("60's")
-        if form.set_list_70.data:
-            set_list_list.append("70's")
-        if form.set_list_80.data:
-            set_list_list.append("80's")
-        if form.set_list_90.data:
-            set_list_list.append("90's")
-        if form.set_list_2000.data:
-            set_list_list.append("2000's")
-        if form.set_list_present.data:
-            set_list_list.append("Present")
-        if form.set_list_outreach.data:
-            set_list_list.append("Outreach")
-        if form.set_list_christian.data:
-            set_list_list.append("Christian")
-        if form.set_list_secular.data:
-            set_list_list.append("Secular")
-        if form.set_list_originals.data:
-            set_list_list.append("Originals")
-        if form.set_list_worship.data:
-            set_list_list.append("Worship")
-        if form.set_list_hymns.data:
-            set_list_list.append("Hymns")
-
-        if len(set_list_list) == 0:
-            return 'empty'
-        elif len(set_list_list) == 1:
-            set_list_string += set_list_list[0]
-        else:
-            set_list_string += set_list_list[0]
-            for set in set_list_list[1:]:
-                set_list_string += '|'
-                set_list_string += set  
-        return set_list_string
-    return None
 
 
 def marketing_list_form_submit(correct_field, field, form, 
