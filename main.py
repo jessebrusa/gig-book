@@ -30,7 +30,7 @@ app.config['UPLOAD_FOLDER'] = './static/location_img'
 ckeditor = CKEditor(app)
 Bootstrap(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///contact-page.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///digital-contact.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
