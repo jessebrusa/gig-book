@@ -63,7 +63,7 @@ class DataBase(db.Model):
     marketing = db.relationship('MarketingTable')
     comments = db.relationship('CommentsTable')
     feedback = db.relationship('FeedbackTable')
-    testimonial = db.relationship('Testimonial')
+    testimonials = db.relationship('TestimonialTable')
 
 
 class ContactTable(db.Model):
@@ -314,22 +314,11 @@ def form():
     if request.method == 'POST':
 
         if form.location_img_url.data:
-            file = form.location_img_url.data
-            file_string = str(form.location_img_url.data.filename)
-
-            if file_string.endswith('.jpg'):
-                file_type = '.jpg'
-            elif file_string.endswith('.jpeg'):
-                file_type = '.jpeg'
-            elif file_string.endswith('.png'):
-                file_type = '.png'
-            else:
-                location_img_url = None
-
-            file_string = str(form.facility.data)
-
-            if ' ' in file_string:
-                file_string = file_string.replace(' ', '_')
+            url_items = image_url(form.location_img_url.data, 
+                                  form.facility.data)
+            file = url_items[0]
+            file_string = url_items[1]
+            file_type = url_items[2]
 
             file.save(os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                    app.config['UPLOAD_FOLDER'],
@@ -351,7 +340,6 @@ def form():
             location_img_url = location_img_url,
             mass_email = form.mass_email.data,
         )
-
         db.session.add(new_entry)
         db.session.commit()
 
@@ -503,7 +491,7 @@ def form():
             new_testimonial = TestimonialTable(
                 testimonial = form.testimonial.data,
                 date = testimonial_date,
-                data_base_ide = new_entry.id,
+                data_base_id = new_entry.id,
             )
             db.session.add(new_testimonial)
             db.session.commit()
@@ -755,10 +743,19 @@ def commit_add_data(id, field):
                 db.session.commit()
 
 
-        new_testimonial = add_ckeditor_comment_testimonial_method('testimonial', field,
-                                                                  form, facility.date_testimonials_list)
-        if new_testimonial:
-            facility.date_testimonials_list = new_testimonial
+        if field == 'testimonial':
+            date = request.form.get('date_')
+            if date:
+                date = format_date(date)
+            else:
+                date = None
+            new_testimonial = TestimonialTable(
+                testimonial = form.testimonial.data,
+                date = date,
+                data_base_id = id,
+            )
+            db.session.add(new_testimonial)
+            db.session.commit()
 
 
         db.session.commit()
@@ -848,23 +845,20 @@ def edit_field(id, field):
         market_date_list = None
 
 
-
-    comments = facility.comments
-
-    feedback_list = facility.feedback
-
-
-    testimonials_list = compare_field_return_data('testimonial', field, facility.date_testimonials_list)
-    if testimonials_list:
-        testimonial_items = feedback_dates_values(testimonials_list)
-        testimonial_dates = testimonial_items[0]
-        testimonial_values = testimonial_items[1]
+    if 'comments' == field:
+        comments = facility.comments
     else:
-        testimonial_dates = None
-        testimonial_values = None
-    testimonials_list_len = list_length(testimonials_list)
+        comments = None
 
+    if 'feedback' == field:
+        feedback_list = facility.feedback
+    else:
+        feedback_list = None
 
+    if 'testimonial' == field:
+        testimonials = facility.testimonials
+    else:
+        testimonials = facility.testimonials
 
 
     return render_template('edit-field.html', id=id, facility=facility, form=form, field=field, venue=venue, contacts=contacts,
@@ -875,8 +869,8 @@ def edit_field(id, field):
                            weekdays=weekdays, 
                            setlist=setlist, market_date_list=market_date_list,
                            comments=comments, feedback_list=feedback_list,
-                           feedback_list_items=feedback_list_items, testimonials_list=testimonials_list,
-                           testimonial_dates=testimonial_dates, testimonial_values=testimonial_values, testimonials_list_len=testimonials_list_len)
+                           feedback_list_items=feedback_list_items,
+                           testimonials=testimonials)
 
 
 @app.route('/commit-edit/<int:id>/<field>', methods=['GET', 'POST'])
@@ -901,14 +895,18 @@ def commit_edit(id, field):
                 facility.distance_hour = request.form.get('distance_hour_')
                 facility.distance_min = request.form.get('distance_min_')
 
-
-        edit_img_file_string_type = image_url('location_img', field,
-                                 'location_img_new', facility)
-        if edit_img_file_string_type:
-            edit_img_file_string_type[0].save(os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                app.config['UPLOAD_FOLDER'],
-                                secure_filename(f'{edit_img_file_string_type[1]}{edit_img_file_string_type[2]}')))
-            facility.location_img_url = f'../static/location_img/{edit_img_file_string_type[1]}{edit_img_file_string_type[2]}'
+        if field == 'location_img':
+            if form.location_img_url.data:
+                edit_img_file_string_type = image_url(form.location_img_url.data, 
+                                                      facility.facility, 
+                                                      old_file=facility.location_img_url)
+                edit_img_file_string_type[0].save(os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                    app.config['UPLOAD_FOLDER'],
+                                    secure_filename(f'{edit_img_file_string_type[1]}{edit_img_file_string_type[2]}')))
+                facility.location_img_url = f'../static/location_img/{edit_img_file_string_type[1]}{edit_img_file_string_type[2]}'
+                
+            else:
+                edit_img_file_string_type = None
 
         
         edit_address = edit_address_method('address', field, facility)
@@ -1009,24 +1007,20 @@ def wtform_edit(id, field, data):
 
     if 'comments' == field:
         comment = CommentsTable.query.filter_by(id=data).first()
-
-
-    testimonial_item = wtf_edit_method('testimonial', field,
-                                       facility.date_testimonials_list,
-                                       data)
-    if testimonial_item:
-        testimonial_items = testimonial_dates_values(testimonial_item)
-        testimonial_date = testimonial_items[0]
-        testimonial_value = testimonial_items[1]
     else:
-        testimonial_items = None
-        testimonial_date = None
-        testimonial_value = None
+        comment = None
+
+
+    if 'testimonial' == field:
+        testimonial = TestimonialTable.query.filter_by(id=data).first()
+    else:
+        testimonial = None
+
     
     return render_template('wtformedit.html', id=id, field=field, data=data, facility=facility, form=form,
                            market_date_list=market_date_list,
-                           comment=comment, testimonial_item=testimonial_item, testimonial_date=testimonial_date,
-                           testimonial_value=testimonial_value)
+                           comment=comment, testimonial=testimonial
+                           )
 
 
 @app.route('/wtformcommit/<int:id>/<field>/<data>', methods=['GET', 'POST'])
@@ -1074,13 +1068,18 @@ def wtform_commit(id, field, data):
                 db.session.commit()
             
         
-        edit_testimonial = wtf_edit_testimonial('testimonial', field,
-                                                facility.date_testimonials_list, data, form)
-        if edit_testimonial:
-            facility.date_testimonials_list = edit_testimonial
-            if facility.date_testimonials_list is not None:
+        if 'testimonial' == field:
+            if form.testimonial.data or request.form.get('date_'):
+                testimonial = form.testimonial.data
+                date = request.form.get('date_')
+                edit_testimonial = TestimonialTable.query.filter_by(id=data).first()
+                if date:
+                    date = format_date(date)
+                    edit_testimonial.date = date
+                if testimonial:
+                    edit_testimonial.testimonial = form.testimonial.data
                 db.session.commit()
-                return redirect(url_for('edit_field', id=id, field='testimonial'))
+
 
     return redirect(url_for('edit_field', id=id, field=field))
 
@@ -1200,15 +1199,12 @@ def delete_data(id, field, data):
             return redirect(url_for('facility_page', id=id))
 
 
-    delete_testimonial = delete_data_method('testimonial', field, facility.date_testimonials_list,
-                                            data, False)
-    if delete_testimonial:
-        if delete_testimonial == 'None':
-            facility.date_testimonials_list = None
+    if field == 'testimonial':
+        delete_testimonial = TestimonialTable.query.filter_by(id=data).first()
+        db.session.delete(delete_testimonial)
+        if return_table_list(facility.testimonials) is None:
             db.session.commit()
             return redirect(url_for('facility_page', id=id))
-        else:
-            facility.date_testimonials_list = delete_testimonial
 
 
     db.session.commit()

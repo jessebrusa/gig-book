@@ -172,6 +172,32 @@ def date_key(date_str):
     return datetime.strptime(date_str, "%m/%d/%Y")
 
 
+def image_url(form_url, facility_name, **kwargs):
+    if kwargs.get('old_file'):
+        old_file = kwargs.get('old_file')
+        try:
+            os.remove(old_file)
+        except:
+            pass
+
+    file = form_url
+    print(file)
+    file_string = str(file.filename)
+    print(file_string)
+
+    if file_string.endswith('.jpg'):
+        file_type = '.jpg'
+    elif file_string.endswith('.jpeg'):
+        file_type = '.jpeg'
+    elif file_string.endswith('.png'):
+        file_type = '.png'
+
+    new_file_string = str(facility_name)
+
+    if ' ' in new_file_string:
+        new_file_string = file_string.replace(' ', '_')
+
+    return [file, new_file_string, file_type]
 
 
 
@@ -607,36 +633,6 @@ def delete_data_method(correct_field, field, facility_object, data_num, required
     else:
         return None
         
-
-def image_url(correct_field, field, request_name, facility_object):
-    if correct_field == field:
-        if request.files[request_name]:
-            old_file = facility_object.location_img_url
-
-            try:
-                os.remove(old_file)
-            except:
-                pass
-
-            file = request.files[request_name]
-            file_string = str(file.filename)
-
-            if file_string.endswith('.jpg'):
-                file_type = '.jpg'
-            elif file_string.endswith('.jpeg'):
-                file_type = '.jpeg'
-            elif file_string.endswith('.png'):
-                file_type = '.png'
-
-            new_file_string = str(facility_object.facility)
-
-            if ' ' in new_file_string:
-                new_file_string = file_string.replace(' ', '_')
-
-            return [file, new_file_string, file_type]
-        else:
-            pass
-
 
 def last_item(list):
     if list:

@@ -48,7 +48,8 @@
                 {% if location_img %}
                     <div class="formRow">
                         <label class="leftItem">Choose a new image:</label>
-                        <input type="file" class="inputField" name="location_img_new">
+                        <!-- <input type="file" class="inputField" name="location_img_new"> -->
+                        {{ form.location_img_url(class_='chooseFile') }}
                     </div>
                 {% endif %}
                 {% if address %}
@@ -475,18 +476,18 @@
                         <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='feedback', data=feedback.id) }}">DELETE</a>    
                     {% endfor %} 
                 {% endif %}
-                {% if testimonials_list %}
+                {% if testimonials %}
                 <h2><u>Testimonials</u></h2>
-                    {% for num in range(testimonials_list_len) %}
+                    {% for testimonial in testimonials %}
                         <div class="formRow">
-                            <label class="ckEditorCenter dateCenter">{{ testimonial_dates[num] }}</label>
+                            <label class="ckEditorCenter dateCenter">{{ testimonial.date }}</label>
                         </div>
                         <div class="formRow ckEditorBox">
-                            <p>{{ testimonial_values[num]|safe }}</p>
+                            <p>{{ testimonial.testimonial|safe }}</p>
                         </div>
                         <div class="formRow">
-                            <a class="editBtn" href="{{ url_for('wtform_edit', id=facility.id, field='testimonial', data=num) }}">EDIT</a>
-                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='testimonial', data=num) }}">DELETE</a>
+                            <a class="editBtn" href="{{ url_for('wtform_edit', id=facility.id, field='testimonial', data=testimonial.id) }}">EDIT</a>
+                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='testimonial', data=testimonial.id) }}">DELETE</a>
                         </div>
                     {% endfor %}
                 {% endif %}

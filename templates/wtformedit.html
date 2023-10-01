@@ -13,15 +13,15 @@
             </div>
             <h1 class="contactH1">Heather Rae Gigs</h1>
             <div class="formContainer">
-                {% if testimonial_item %}
+                {% if testimonial %}
                     <div class="formRow">
-                        <label class="leftItem">{{ testimonial_date }}:</label>
+                        <label class="leftItem">{{ testimonial.date }}:</label>
                         <input type="date" class="dateCalendar" name="date_">
                     </div>
                     <div class="testimonialBox">
-                        <p>{{ testimonial_value|safe }}</p>
+                        <p>{{ testimonial.testimonial|safe }}</p>
                     </div>
-                    {{ form.testimonials_list(class_='ckEditor') }}
+                    {{ form.testimonial(class_='ckEditor') }}
                 {% endif %}
                 {% if comment %}
                     <div class="testimonialBox">
