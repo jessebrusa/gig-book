@@ -52,7 +52,6 @@ class DataBase(db.Model):
     mass_email = db.Column(db.Boolean)
     date_feedback_list = db.Column(db.Text)
     date_testimonials_list = db.Column(db.Text) 
-    comments_list = db.Column(db.Text)
 
     contact_person = db.relationship('ContactTable')
     email = db.relationship('EmailTable')
@@ -64,6 +63,7 @@ class DataBase(db.Model):
     price_date = db.relationship('PriceDateTable')
     setlist = db.relationship('SetlistTable')
     marketing = db.relationship('MarketingTable')
+    comments = db.relationship('CommentsTable')
 
 
 class ContactTable(db.Model):
@@ -146,6 +146,14 @@ class MarketingTable(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     material = db.Column(db.String(250))
     date = db.Column(db.String(250))
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class CommentsTable(db.Model):
+    __tablename__ = 'comments_table'
+    id = db.Column(db.Integer, primary_key=True)
+    comment = db.Column(db.String(250))
 
     data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
 
@@ -329,11 +337,6 @@ def form():
                 testimonials_list = form.testimonials_list.data
         else:
             testimonials_list = None
-
-        if form.comments_list:
-            comments_list = form.comments_list.data
-        else:
-            comments_list = None
               
 
         new_entry = DataBase(
@@ -348,7 +351,6 @@ def form():
             mass_email = form.mass_email.data,
             date_feedback_list = feedback,
             date_testimonials_list = testimonials_list,
-            comments_list = comments_list,
         )
 
         db.session.add(new_entry)
@@ -471,6 +473,16 @@ def form():
                 db.session.add(new_marketing)
                 db.session.commit()
 
+        if form.comment.data:
+            new_comment = CommentsTable(
+                comment = form.comment.data,
+                data_base_id = new_entry.id,
+            )
+            db.session.add(new_comment)
+            db.session.commit()
+
+
+
 
         return redirect(url_for('facility_page', id=new_entry.id))
 
@@ -503,14 +515,9 @@ def facility_page(id):
 
     price_date_list = [[price_date.price, price_date.date] for price_date in facility.price_date]
 
-
-    
-
     setlist = return_list(facility.setlist, 'setlist')
     if setlist:
-        setlist = sorted(setlist)
-        
-
+        setlist = sorted(setlist)      
  
     market_date_table = return_list(facility.marketing, 'date')
     if market_date_table:
@@ -527,8 +534,7 @@ def facility_page(id):
     else:
         market_date_list = None
 
-    comments_list = split_list(facility.comments_list)
-    comments_list_length = list_length(comments_list)
+    comments_list = return_list(facility.comments, 'comment')
 
     feedback_array = split_list(facility.date_feedback_list)
     feedback_list = split_break_itemOne_itemTwo(feedback_array)
@@ -542,7 +548,7 @@ def facility_page(id):
                            market_date_list=market_date_list, contact_person=contact_person, id=id,
                            phone_number=phone_number, email=email, venue_type=venue_type, performance_type=performance_type, 
                            day_time_list=day_time_list,comments_list=comments_list, duration_list=duration_list,
-                           comments_list_length=comments_list_length,feedback_list=feedback_list, feedback_list_length=feedback_list_length ,
+                           feedback_list=feedback_list, feedback_list_length=feedback_list_length ,
                            testimonial_list=testimonial_list, testimonial_list_length=testimonial_list_length , phone_string=phone_string, 
                            phone_ext=phone_ext, distance_hour=distance_hour, distance_min=distance_min)
 
@@ -695,10 +701,14 @@ def commit_add_data(id, field):
                     db.session.commit()
 
 
-        new_comment = add_ckeditor_comment_testimonial_method('comments', field, 
-                                                  form, facility.comments_list)
-        if new_comment:
-            facility.comments_list = new_comment
+        if field == 'comments':
+            if form.comment.data:
+                new_comment = CommentsTable(
+                    comment = form.comment.data,
+                    data_base_id = id,
+                )
+                db.session.add(new_comment)
+                db.session.commit()
 
 
         new_feedback = add_date_item_method('feedback', field,
@@ -802,9 +812,8 @@ def edit_field(id, field):
 
 
 
-    
-    comments = compare_field_return_data('comments', field, facility.comments_list)
-    comments_len = list_length(comments)
+    comments = facility.comments
+
     feedback = compare_field_return_data('feedback', field, facility.date_feedback_list)
     if feedback:
         feedback_items = feedback_dates_values(feedback)
@@ -834,7 +843,7 @@ def edit_field(id, field):
                            performance_type_list=performance_type_list, duration_list=duration_list, venue_box=venue_box, price_date_list=price_date_list,
                            weekdays=weekdays, 
                            setlist=setlist, market_date_list=market_date_list,
-                           comments=comments, comments_len=comments_len, feedback=feedback, feedback_len=feedback_len,
+                           comments=comments, feedback=feedback, feedback_len=feedback_len,
                            feedback_list_items=feedback_list_items, feedback_dates=feedback_dates, feedback_values=feedback_values, testimonials_list=testimonials_list,
                            testimonial_dates=testimonial_dates, testimonial_values=testimonial_values, testimonials_list_len=testimonials_list_len)
 
@@ -970,10 +979,9 @@ def wtform_edit(id, field, data):
         market_date_list = None
 
 
+    if 'comments' == field:
+        comment = CommentsTable.query.filter_by(id=data).first()
 
-    comment = wtf_edit_method('comments', field,
-                               facility.comments_list, data)
-    
 
     testimonial_item = wtf_edit_method('testimonial', field,
                                        facility.date_testimonials_list,
@@ -1031,13 +1039,11 @@ def wtform_commit(id, field, data):
                 return redirect(url_for('facility_page', id=id))
             
 
-
-        edit_comment = wtf_edit_ckeditor('comments', field, facility.comments_list, data, form)
-        if edit_comment:
-            facility.comments_list = edit_comment
-            if facility.comments_list is not None:
+        if 'comments' == field:
+            if form.comment.data:
+                edit_comment = CommentsTable.query.filter_by(id=data).first()
+                edit_comment.comment = form.comment.data
                 db.session.commit()
-                return redirect(url_for('edit_field', id=id, field='comments'))
             
         
         edit_testimonial = wtf_edit_testimonial('testimonial', field,
@@ -1150,16 +1156,12 @@ def delete_data(id, field, data):
                 return redirect(url_for('facility_page', id=id))
 
 
-    delete_comment = delete_data_method('comments', field,
-                                        facility.comments_list,
-                                        data, False)
-    if delete_comment:
-        if delete_comment == 'None':
-            facility.comments_list = None
+    if field == 'comments':
+        delete_comment = CommentsTable.query.filter_by(id=data).first()
+        db.session.delete(delete_comment)
+        if return_table_list(facility.comments) is None:
             db.session.commit()
             return redirect(url_for('facility_page', id=id))
-        else:
-            facility.comments_list = delete_comment
 
 
     delete_feedback = delete_data_method('feedback', field,

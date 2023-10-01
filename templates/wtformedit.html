@@ -25,9 +25,9 @@
                 {% endif %}
                 {% if comment %}
                     <div class="testimonialBox">
-                        <p>{{ comment|safe }}</p>
+                        <p>{{ comment.comment|safe }}</p>
                     </div>
-                    {{ form.comments_list(class_='ckEditor') }}
+                    {{ form.comment(class_='ckEditor') }}
                 {% endif %}
                 {% if market_date_list %}
                     <h2><u>Marketing</u></h2>

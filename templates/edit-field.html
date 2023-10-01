@@ -492,13 +492,13 @@
                     <div class="formRow">
                         <label class="ckEditorCenter"><u>Comments</u></label>
                     </div>
-                    {% for num in range(comments_len) %}
+                    {% for comment in comments %}
                         <div class="formRow ckEditorBox">
-                            <p>{{ comments[num]|safe }}</p>
+                            <p>{{ comment.comment|safe }}</p>
                         </div>
                         <div class="formRow">
-                            <a class="editBtn" href="{{ url_for('wtform_edit', id=facility.id, field='comments', data=num) }}">EDIT</a>
-                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='comments', data=num) }}">DELETE</a>
+                            <a class="editBtn" href="{{ url_for('wtform_edit', id=facility.id, field='comments', data=comment.id) }}">EDIT</a>
+                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='comments', data=comment.id) }}">DELETE</a>
                         </div>
                     {% endfor %}
                 {% endif %}
