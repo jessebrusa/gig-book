@@ -50,7 +50,6 @@ class DataBase(db.Model):
     distance_min = db.Column(db.Integer)
     location_img_url = db.Column(db.String(250))
     mass_email = db.Column(db.Boolean)
-    date_feedback_list = db.Column(db.Text)
     date_testimonials_list = db.Column(db.Text) 
 
     contact_person = db.relationship('ContactTable')
@@ -64,6 +63,7 @@ class DataBase(db.Model):
     setlist = db.relationship('SetlistTable')
     marketing = db.relationship('MarketingTable')
     comments = db.relationship('CommentsTable')
+    feedback = db.relationship('FeedbackTable')
 
 
 class ContactTable(db.Model):
@@ -154,6 +154,15 @@ class CommentsTable(db.Model):
     __tablename__ = 'comments_table'
     id = db.Column(db.Integer, primary_key=True)
     comment = db.Column(db.String(250))
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class FeedbackTable(db.Model):
+    __tablename__ = 'feedback_table'
+    id = db.Column(db.Integer, primary_key=True)
+    feedback = db.Column(db.String(250))
+    date = db.Column(db.String(250))
 
     data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
 
@@ -320,15 +329,6 @@ def form():
             location_img_url = f'../static/location_img/{file_string}{file_type}'
         else:
             location_img_url = None
-  
-
-        if form.feedback_list.data != 'None':
-            if date:
-                feedback = f"{date}|{form.feedback_list.data}"
-            else:
-                feedback = form.feedback_list.data
-        else:
-            feedback = None
 
         if form.testimonials_list.data:
             if date:
@@ -349,7 +349,6 @@ def form():
             distance_min = form.distance_min.data,
             location_img_url = location_img_url,
             mass_email = form.mass_email.data,
-            date_feedback_list = feedback,
             date_testimonials_list = testimonials_list,
         )
 
@@ -481,7 +480,20 @@ def form():
             db.session.add(new_comment)
             db.session.commit()
 
-
+        if form.feedback.data:
+            form_feedback = form.feedback.data
+            if form_feedback != 'None':
+                if form.feedback_date.data:
+                    date = format_date(form.feedback_date.data)
+                else:
+                    date = None
+                new_feedback = FeedbackTable(
+                    feedback = form_feedback,
+                    date = date,
+                    data_base_id = new_entry.id,
+                )
+                db.session.add(new_feedback)
+                db.session.commit()
 
 
         return redirect(url_for('facility_page', id=new_entry.id))
@@ -536,9 +548,10 @@ def facility_page(id):
 
     comments_list = return_list(facility.comments, 'comment')
 
-    feedback_array = split_list(facility.date_feedback_list)
-    feedback_list = split_break_itemOne_itemTwo(feedback_array)
-    feedback_list_length = list_length(feedback_array)
+    feedback_list = [[item.feedback, item.date] for item in facility.feedback]
+
+    # feedback_list = split_break_itemOne_itemTwo(feedback_array)
+    # feedback_list_length = list_length(feedback_array)
 
     testimonial_array = split_list(facility.date_testimonials_list)
     testimonial_list = split_break_itemOne_itemTwo(testimonial_array)
@@ -548,7 +561,7 @@ def facility_page(id):
                            market_date_list=market_date_list, contact_person=contact_person, id=id,
                            phone_number=phone_number, email=email, venue_type=venue_type, performance_type=performance_type, 
                            day_time_list=day_time_list,comments_list=comments_list, duration_list=duration_list,
-                           feedback_list=feedback_list, feedback_list_length=feedback_list_length ,
+                           feedback_list=feedback_list, 
                            testimonial_list=testimonial_list, testimonial_list_length=testimonial_list_length , phone_string=phone_string, 
                            phone_ext=phone_ext, distance_hour=distance_hour, distance_min=distance_min)
 
@@ -711,11 +724,23 @@ def commit_add_data(id, field):
                 db.session.commit()
 
 
-        new_feedback = add_date_item_method('feedback', field,
-                                            'date_', 'feedback_',
-                                            facility.date_feedback_list)
-        if new_feedback:
-            facility.date_feedback_list = new_feedback
+        if field == 'feedback':
+            if request.form.get('date_'):
+                date = request.form.get('date_')
+            else:
+                date = None
+            if request.form.get('feedback_'):
+                feedback = request.form.get('feedback_')
+            else:
+                feedback = None
+            if feedback:
+                new_feedback = FeedbackTable(
+                    feedback = feedback,
+                    date = date,
+                    data_base_id = id,
+                )
+                db.session.add(new_feedback)
+                db.session.commit()
 
 
         new_testimonial = add_ckeditor_comment_testimonial_method('testimonial', field,
@@ -814,15 +839,9 @@ def edit_field(id, field):
 
     comments = facility.comments
 
-    feedback = compare_field_return_data('feedback', field, facility.date_feedback_list)
-    if feedback:
-        feedback_items = feedback_dates_values(feedback)
-        feedback_dates = feedback_items[0]
-        feedback_values = feedback_items[1]
-    else:
-        feedback_dates = None
-        feedback_values = None
-    feedback_len = list_length(feedback)
+    feedback_list = facility.feedback
+
+
     testimonials_list = compare_field_return_data('testimonial', field, facility.date_testimonials_list)
     if testimonials_list:
         testimonial_items = feedback_dates_values(testimonials_list)
@@ -843,8 +862,8 @@ def edit_field(id, field):
                            performance_type_list=performance_type_list, duration_list=duration_list, venue_box=venue_box, price_date_list=price_date_list,
                            weekdays=weekdays, 
                            setlist=setlist, market_date_list=market_date_list,
-                           comments=comments, feedback=feedback, feedback_len=feedback_len,
-                           feedback_list_items=feedback_list_items, feedback_dates=feedback_dates, feedback_values=feedback_values, testimonials_list=testimonials_list,
+                           comments=comments, feedback_list=feedback_list,
+                           feedback_list_items=feedback_list_items, testimonials_list=testimonials_list,
                            testimonial_dates=testimonial_dates, testimonial_values=testimonial_values, testimonials_list_len=testimonials_list_len)
 
 
@@ -947,12 +966,9 @@ def commit_edit(id, field):
                     db.session.commit()
 
 
-
-        edit_feedback = edit_data_date_method('feedback', field, 
-                                              facility.date_feedback_list,
-                                              'feedback_')
-        if edit_feedback:
-            facility.date_feedback_list = edit_feedback 
+        if 'feedback' == field:
+            edit_two_database(facility.feedback, 'feedback_', 'date_',
+                              FeedbackTable, 'feedback', 'date')
 
 
         db.session.commit()
@@ -1164,16 +1180,12 @@ def delete_data(id, field, data):
             return redirect(url_for('facility_page', id=id))
 
 
-    delete_feedback = delete_data_method('feedback', field,
-                                         facility.date_feedback_list,
-                                         data, False)
-    if delete_feedback:
-        if delete_feedback == 'None':
-            facility.date_feedback_list = None
+    if field == 'feedback':
+        delete_feedback = FeedbackTable.query.filter_by(id=data).first()
+        db.session.delete(delete_feedback)
+        if return_table_list(facility.feedback) is None:
             db.session.commit()
             return redirect(url_for('facility_page', id=id))
-        else:
-            facility.date_feedback_list = delete_feedback
 
 
     delete_testimonial = delete_data_method('testimonial', field, facility.date_testimonials_list,

@@ -142,7 +142,7 @@
                     {{ form.duration_min(class_='inputField') }}
                 </div>
                 <div class="formRow">
-                    <label class="leftItem">Price Date</label>
+                    <label class="leftItem">Price Date:</label>
                     {{ form.price_date(class_='dateCalendar') }}
                 </div>
                 <div class="formRow">
@@ -157,8 +157,12 @@
                     </div>
                 </div>
                 <div class="formRow">
+                    <label class="leftItem">Feedback Date:</label>
+                    {{ form.feedback_date(class_='dateCalendar') }}
+                </div>
+                <div class="formRow">
                     <label class="leftItem">Feedback:</label>
-                    {{ form.feedback_list(class_='dropdownOption') }}
+                    {{ form.feedback(class_='dropdownOption') }}
                 </div>
                 <div class="formRow">
                     <label class="leftItem">Testimonial Date</label>

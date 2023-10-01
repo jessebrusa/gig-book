@@ -57,6 +57,7 @@ def edit_two_database(facility_object, request_name_one, request_name_two,
         request_data_one = request.form.get(request_name_one_id)
         request_data_two = request.form.get(request_name_two_id)
 
+
         if '-' in str(request_data_two):
             request_data_two = format_date(str(request_data_two))
         elif ':' in str(request_data_two):

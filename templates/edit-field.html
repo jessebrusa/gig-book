@@ -456,21 +456,23 @@
                         <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='date_price', data=price_date[2]) }}">DELETE</a>
                     {% endfor %}
                 {% endif %}
-                {% if feedback %}
+                {% if feedback_list %}
                     <h2><u>Feedback</u></h2>
-                    {% for num in range(feedback_len) %}
+                    {% for feedback in feedback_list %}
                         <div class="formRow">
-                            <label class="leftItem">{{ feedback_dates[num] }}:</label>
-                            <input type="date" class="dateCalendar" name="date_{{ num }}"> 
-                            <label class="leftItem">{{ feedback_values[num] }}:</label>
-                            <select name="feedback_{{ num }}" class="dropdownOption venueOption">
+                            <label class="leftItem">{{ feedback.date }}:</label>
+                            <input type="date" class="dateCalendar" name="date_{{ feedback.id }}">
+                        </div>
+                        <div class="formRow">
+                            <label class="leftItem">{{ feedback.feedback }}:</label>
+                            <select name="feedback_{{ feedback.id }}" class="dropdownOption venueOption">
                                 <option value="">None</option>
                                 {% for choice in feedback_list_items %}
                                     <option value="{{ choice }}" >{{ choice }}</option>
                                 {% endfor %}
                             </select>
                         </div>     
-                        <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='feedback', data=num) }}">DELETE</a>    
+                        <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='feedback', data=feedback.id) }}">DELETE</a>    
                     {% endfor %} 
                 {% endif %}
                 {% if testimonials_list %}

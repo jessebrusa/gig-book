@@ -283,16 +283,16 @@
                 <a href="{{ url_for('add_data', id=facility.id, field='feedback') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
             </div>
             <h2><u>Feedback:</u></h2>
-            {% for num in range(feedback_list_length) %}
-                {% if feedback_list[num][0] %}
+            {% for feedback_date in feedback_list %}
+                {% if feedback_date[1] %}
                     <div class="commentsContainer">
-                        <h3 class="comments">{{ feedback_list[num][0] }}. </h3>
-                        <h3 class="comments">{{ feedback_list[num][1]|safe }}</h3>
+                        <h3 class="comments">{{ feedback_date[1] }}. </h3>
+                        <h3 class="comments">{{ feedback_date[0]|safe }}</h3>
                     </div>
                 {% else %}
-                <div class="commentsContainer">
-                    <h3 class="comments">{{ feedback_list[num][1]|safe }}</h3>
-                </div>
+                    <div class="commentsContainer">
+                        <h3 class="comments">{{ feedback_date[0]|safe }}</h3>
+                    </div>
                 {% endif %}
             {% endfor %}
         </div>
