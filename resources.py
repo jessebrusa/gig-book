@@ -156,11 +156,6 @@ def marketing_form_submit(form):
     return [marketing_list, date]
 
 
-def market_material_date():
-    pass
-
-
-
 def remove_unwanted_char_phone(phone_number):
     phone_string = str(phone_number)
     if ' ' in phone_string:
@@ -170,6 +165,12 @@ def remove_unwanted_char_phone(phone_number):
     if ')' in phone_string:
         phone_string = phone_string.replace(')', '')
     return phone_string
+
+
+def date_key(date_str):
+    return datetime.strptime(date_str, "%m/%d/%Y")
+
+
 
 
 

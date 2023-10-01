@@ -8,7 +8,7 @@ split_break_day_time, split_break_itemOne_itemTwo, split_break, list_length, \
 split_colon_market_date, compare_field, add_data_method, last_item, image_url, \
 add_two_data_method, add_date_item_method, market_date_method, format_url_date, \
 add_ckeditor_comment_testimonial_method, compare_field_return_data, compare_field_address, \
-split_break_date_item, edit_data_method, delete_data_method, edit_address_method, \
+split_break_date_item, edit_data_method, delete_data_method, edit_address_method, date_key, \
 edit_mass_email_method, edit_data_method_break, set_list_form_submit, split_break_dates, \
 wtf_edit_data_market, marketing_list_form_submit, wtf_edit_method, wtf_edit_ckeditor, feedback_dates_values, \
 edit_data_date_method, testimonial_dates_values, wtf_edit_testimonial, generate_hash_salt, bible_url, params, \
@@ -504,8 +504,7 @@ def facility_page(id):
     price_date_list = [[price_date.price, price_date.date] for price_date in facility.price_date]
 
 
-    comments_list = split_list(facility.comments_list)
-    comments_list_length = list_length(comments_list)
+    
 
     setlist = return_list(facility.setlist, 'setlist')
     if setlist:
@@ -518,20 +517,22 @@ def facility_page(id):
         market_date_list = []
         date_list = []
         facility_marketing = facility.marketing
+        
         for date in market_date_table:
             if date not in date_list:
                 materials = [item.material for item in facility_marketing if item.date == date]
                 market_date_list.append([materials, date])
                 date_list.append(date)
+        market_date_list = sorted(market_date_list, key=lambda x: date_key(x[1]))
     else:
         market_date_list = None
 
+    comments_list = split_list(facility.comments_list)
+    comments_list_length = list_length(comments_list)
 
-  
     feedback_array = split_list(facility.date_feedback_list)
     feedback_list = split_break_itemOne_itemTwo(feedback_array)
     feedback_list_length = list_length(feedback_array)
-
 
     testimonial_array = split_list(facility.date_testimonials_list)
     testimonial_list = split_break_itemOne_itemTwo(testimonial_array)
