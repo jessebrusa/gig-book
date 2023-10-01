@@ -3,21 +3,14 @@ from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from form import AddressBookForm, weekdays, venue_type_list, performance_type_list, \
 feedback_list_items, LoginForm, MassEmailForm
-from resources import split_list, ext_phone, phone_to_string, format_duration, \
-split_break_day_time, split_break_itemOne_itemTwo, split_break, list_length, \
-split_colon_market_date, compare_field, add_data_method, last_item, image_url, \
-add_two_data_method, add_date_item_method, market_date_method, format_url_date, \
-add_ckeditor_comment_testimonial_method, compare_field_return_data, compare_field_address, \
-split_break_date_item, edit_data_method, delete_data_method, edit_address_method, date_key, \
-edit_mass_email_method, edit_data_method_break, set_list_form_submit, split_break_dates, \
-wtf_edit_data_market, marketing_list_form_submit, wtf_edit_method, wtf_edit_ckeditor, feedback_dates_values, \
-edit_data_date_method, testimonial_dates_values, wtf_edit_testimonial, generate_hash_salt, bible_url, params, \
+from resources import ext_phone, phone_to_string, format_duration, compare_field, last_item, image_url, \
+format_url_date, compare_field_return_data, compare_field_address, edit_data_method,  edit_address_method, \
+date_key, edit_mass_email_method, set_list_form_submit, generate_hash_salt, bible_url, params, \
 send_email_with_attachment, attachment_url, check_for_data_return_last, return_list, edit_database, \
 format_time, edit_two_database, return_table_list, format_date, marketing_form_submit, remove_unwanted_char_phone
 from werkzeug.security import check_password_hash
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin, login_user, LoginManager, \
-current_user, logout_user
+from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from functools import wraps
 from werkzeug.utils import secure_filename
 import requests
@@ -214,7 +207,7 @@ def home():
     
     facilities = sorted(facilities, key=lambda x: x.facility)
 
-    facility_names = [last_item(split_list(facility.facility)) for facility in facilities]
+    facility_names = [facility.facility for facility in facilities]
     length = len(facility_names)
 
     facility_contacts = [
@@ -245,11 +238,11 @@ def home():
                           or request_name.lower() in facility.town.lower()
                           or any(request_name.lower() in contact.contact_person.lower() for contact in facility.contact_person)]
 
-            facility_names = [last_item(split_list(facility.facility)) for facility in facilities]
+            facility_names = [facility.facility for facility in facilities]
             length = len(facility_names)
 
             facility_contacts = [
-                check_for_data_return_last(facility.contact_person).contact_person if facility.contact_person else None
+                check_for_data_return_last(facility.contact_person, 'contact_person') if facility.contact_person else None
                 for facility in facilities
                 ]
 
@@ -265,11 +258,11 @@ def home():
     
                 facilities = sorted(facilities, key=lambda x: x.facility)
 
-                facility_names = [last_item(split_list(facility.facility)) for facility in facilities]
+                facility_names = [facility.facility for facility in facilities]
                 length = len(facility_names)
 
                 facility_contacts = [
-                check_for_data_return_last(facility.contact_person).contact_person if facility.contact_person else None
+                check_for_data_return_last(facility.contact_person, 'contact_person') if facility.contact_person else None
                 for facility in facilities
                 ]
 
@@ -286,11 +279,11 @@ def home():
     
                 facilities = sorted(facilities, key=lambda x: x.town)
 
-                facility_names = [last_item(split_list(facility.facility)) for facility in facilities]
+                facility_names = [facility.facility for facility in facilities]
                 length = len(facility_names)
 
                 facility_contacts = [
-                    check_for_data_return_last(facility.contact_person).contact_person if facility.contact_person else None
+                    check_for_data_return_last(facility.contact_person, 'contact_person') if facility.contact_person else None
                     for facility in facilities
                     ]
 
@@ -323,7 +316,6 @@ def form():
             file.save(os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                    app.config['UPLOAD_FOLDER'],
                                    secure_filename(f'{file_string}{file_type}')))
-
             location_img_url = f'../static/location_img/{file_string}{file_type}'
         else:
             location_img_url = None
@@ -353,6 +345,7 @@ def form():
             db.session.add(new_contact)
             db.session.commit()
 
+
         if form.email.data:
             new_email = EmailTable(
                 email = form.email.data,
@@ -361,6 +354,7 @@ def form():
 
             db.session.add(new_email)
             db.session.commit()
+
 
         if form.phone_number.data:
             phone_string = remove_unwanted_char_phone(form.phone_number.data)
@@ -390,6 +384,7 @@ def form():
                 db.session.add(new_preferred_day_time)
                 db.session.commit()
 
+
         if form.venue_type.data:
             if form.venue_type.data != 'None':
                 venue_type = form.venue_type.data
@@ -399,6 +394,7 @@ def form():
                 )
                 db.session.add(new_venue)
                 db.session.commit()
+
 
         if form.performance_type.data:
             if form.performance_type.data != 'None':
@@ -420,6 +416,7 @@ def form():
             db.session.add(new_duration)
             db.session.commit()
 
+
         if form.price.data or form.price_date.data:
             if form.price_date.data:
                 price_date = format_date(str(form.price_date.data))
@@ -433,6 +430,7 @@ def form():
             db.session.add(new_price_date)
             db.session.commit()
 
+
         setlist_list = set_list_form_submit(form)
         if setlist_list:
             for item in setlist_list:
@@ -442,6 +440,7 @@ def form():
                 )
                 db.session.add(new_setlist)
                 db.session.commit()
+
 
         marketing_list_date = marketing_form_submit(form)
         if marketing_list_date:
@@ -460,6 +459,7 @@ def form():
                 db.session.add(new_marketing)
                 db.session.commit()
 
+
         if form.comment.data:
             new_comment = CommentsTable(
                 comment = form.comment.data,
@@ -467,6 +467,7 @@ def form():
             )
             db.session.add(new_comment)
             db.session.commit()
+
 
         if form.feedback.data:
             form_feedback = form.feedback.data
@@ -483,6 +484,7 @@ def form():
                 db.session.add(new_feedback)
                 db.session.commit()
 
+
         if form.testimonial.data:
             if form.testimonial_date.data:
                 testimonial_date = format_date(form.testimonial_date.data)
@@ -495,7 +497,6 @@ def form():
             )
             db.session.add(new_testimonial)
             db.session.commit()
-
 
 
         return redirect(url_for('facility_page', id=new_entry.id))
@@ -553,9 +554,7 @@ def facility_page(id):
     feedback_list = [[item.feedback, item.date] for item in facility.feedback]
 
     testimonials = facility.testimonials
-    # testimonial_array = split_list(facility.date_testimonials_list)
-    # testimonial_list = split_break_itemOne_itemTwo(testimonial_array)
-    # testimonial_list_length = list_length(testimonial_array)
+
 
     return render_template('facility-page.html', facility=facility, price_date_list=price_date_list, setlist=setlist,
                            market_date_list=market_date_list, contact_person=contact_person, id=id,
@@ -608,7 +607,7 @@ def commit_add_data(id, field):
             db.session.add(new_contact)
         
 
-        image_file_string_type = image_url('image', field, 'location_img_new', facility)
+        image_file_string_type = image_url(form.location_img_url.data, facility.facility)
         if image_file_string_type:
             image_file_string_type[0].save(os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                 app.config['UPLOAD_FOLDER'],
