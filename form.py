@@ -81,7 +81,7 @@ class AddressBookForm(FlaskForm):
     feedback_date = DateField('Feedback Date')
     feedback = SelectField('Feedback_list', choices=[('None')] + feedback_list_items, default='None')
     testimonial_date = DateField('Testimonial Date')
-    testimonials_list = CKEditorField('Testimonials')
+    testimonial = CKEditorField('Testimonials')
     comment = CKEditorField('Comments')
     
     marketing_date = DateField('Date')

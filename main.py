@@ -30,7 +30,7 @@ app.config['UPLOAD_FOLDER'] = './static/location_img'
 ckeditor = CKEditor(app)
 Bootstrap(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///address.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///contact-page.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -50,7 +50,6 @@ class DataBase(db.Model):
     distance_min = db.Column(db.Integer)
     location_img_url = db.Column(db.String(250))
     mass_email = db.Column(db.Boolean)
-    date_testimonials_list = db.Column(db.Text) 
 
     contact_person = db.relationship('ContactTable')
     email = db.relationship('EmailTable')
@@ -64,6 +63,7 @@ class DataBase(db.Model):
     marketing = db.relationship('MarketingTable')
     comments = db.relationship('CommentsTable')
     feedback = db.relationship('FeedbackTable')
+    testimonial = db.relationship('Testimonial')
 
 
 class ContactTable(db.Model):
@@ -162,6 +162,15 @@ class FeedbackTable(db.Model):
     __tablename__ = 'feedback_table'
     id = db.Column(db.Integer, primary_key=True)
     feedback = db.Column(db.String(250))
+    date = db.Column(db.String(250))
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+
+
+class TestimonialTable(db.Model):
+    __tablename__ = 'testimonial_table'
+    id = db.Column(db.Integer, primary_key=True)
+    testimonial = db.Column(db.String(250))
     date = db.Column(db.String(250))
 
     data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
@@ -329,14 +338,6 @@ def form():
             location_img_url = f'../static/location_img/{file_string}{file_type}'
         else:
             location_img_url = None
-
-        if form.testimonials_list.data:
-            if date:
-                testimonials_list = f"{date}|{form.testimonials_list.data}"
-            else:
-                testimonials_list = form.testimonials_list.data
-        else:
-            testimonials_list = None
               
 
         new_entry = DataBase(
@@ -349,7 +350,6 @@ def form():
             distance_min = form.distance_min.data,
             location_img_url = location_img_url,
             mass_email = form.mass_email.data,
-            date_testimonials_list = testimonials_list,
         )
 
         db.session.add(new_entry)
@@ -495,6 +495,20 @@ def form():
                 db.session.add(new_feedback)
                 db.session.commit()
 
+        if form.testimonial.data:
+            if form.testimonial_date.data:
+                testimonial_date = format_date(form.testimonial_date.data)
+            else:
+                testimonial_date = None
+            new_testimonial = TestimonialTable(
+                testimonial = form.testimonial.data,
+                date = testimonial_date,
+                data_base_ide = new_entry.id,
+            )
+            db.session.add(new_testimonial)
+            db.session.commit()
+
+
 
         return redirect(url_for('facility_page', id=new_entry.id))
 
@@ -550,19 +564,17 @@ def facility_page(id):
 
     feedback_list = [[item.feedback, item.date] for item in facility.feedback]
 
-    # feedback_list = split_break_itemOne_itemTwo(feedback_array)
-    # feedback_list_length = list_length(feedback_array)
-
-    testimonial_array = split_list(facility.date_testimonials_list)
-    testimonial_list = split_break_itemOne_itemTwo(testimonial_array)
-    testimonial_list_length = list_length(testimonial_array)
+    testimonials = facility.testimonials
+    # testimonial_array = split_list(facility.date_testimonials_list)
+    # testimonial_list = split_break_itemOne_itemTwo(testimonial_array)
+    # testimonial_list_length = list_length(testimonial_array)
 
     return render_template('facility-page.html', facility=facility, price_date_list=price_date_list, setlist=setlist,
                            market_date_list=market_date_list, contact_person=contact_person, id=id,
                            phone_number=phone_number, email=email, venue_type=venue_type, performance_type=performance_type, 
                            day_time_list=day_time_list,comments_list=comments_list, duration_list=duration_list,
-                           feedback_list=feedback_list, 
-                           testimonial_list=testimonial_list, testimonial_list_length=testimonial_list_length , phone_string=phone_string, 
+                           feedback_list=feedback_list, testimonials=testimonials,
+                           phone_string=phone_string, 
                            phone_ext=phone_ext, distance_hour=distance_hour, distance_min=distance_min)
 
 

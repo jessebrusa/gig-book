@@ -304,27 +304,25 @@
             <h2><u>Add Feedback:</u></h2>
         </div>
     {% endif %}
-    {% if facility.date_testimonials_list %}
+    {% if testimonials %}
         <div class="largeBox">
             <div class="editAddBtn marginUpNeg centerBtn">
                 <a href="{{ url_for('edit_field', id=facility.id, field='testimonial') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
                 <a href="{{ url_for('add_data', id=facility.id, field='testimonial') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
             </div>
-            {% if testimonial_list %}
             <h2><u>Testimonial:</u></h2>
-                {% for num in range(testimonial_list_length) %}
-                    {% if testimonial_list[num][0] %}
+                {% for testimonial in testimonials %}
+                    {% if testimonial.date %}
                         <div class="commentsContainer">
-                            <h3>{{ testimonial_list[num][0] }}: </h3>
-                            <p>{{ testimonial_list[num][1]|safe }}</p>
+                            <h3>{{ testimonial.date }}: </h3>
+                            <p>{{ testimonial.testimonial|safe }}</p>
                         </div>
                     {% else %}
                         <div class="commentsContainer">
-                            <p>{{ testimonial_list[num][1]|safe }}</p>
+                            <p>{{ testimonial.testimonial|safe }}</p>
                         </div>
                     {% endif %}
                 {% endfor %}
-            {% endif %}
         </div>
     {% else %}
         <div class="largeBox">
