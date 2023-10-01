@@ -392,3 +392,6 @@ bible_url = 'http://labs.bible.org/api/?'
 params = {
     'passage': 'random' 
 }
+
+MAPS_DIRECTIONS_API_KEY = 'AIzaSyB7zXC0t9VFRd2DpOBCGqwT8Zk9PjQIDdI'
+ORIGIN = '256 Millbury Street, Auburn, Ma, 01501' 

@@ -7,7 +7,8 @@ from resources import ext_phone, phone_to_string, format_duration, compare_field
 format_url_date, compare_field_return_data, compare_field_address, edit_data_method,  edit_address_method, \
 date_key, edit_mass_email_method, set_list_form_submit, generate_hash_salt, bible_url, params, \
 send_email_with_attachment, attachment_url, check_for_data_return_last, return_list, edit_database, \
-format_time, edit_two_database, return_table_list, format_date, marketing_form_submit, remove_unwanted_char_phone
+format_time, edit_two_database, return_table_list, format_date, marketing_form_submit, \
+remove_unwanted_char_phone, MAPS_DIRECTIONS_API_KEY, ORIGIN
 from werkzeug.security import check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
@@ -321,20 +322,41 @@ def form():
             location_img_url = None
               
 
+        if form.state.data or form.town.data or form.street or form.zip_code:
+            destination_address = f'{form.street.data}, {form.town.data}, {form.state.data}, {form.zip_code.data}'
+            maps_url = f'https://maps.googleapis.com/maps/api/directions/json?origin={ORIGIN}&destination={destination_address}&key={MAPS_DIRECTIONS_API_KEY}'
+
+            response = requests.get(maps_url)
+            data = response.json()
+
+            if data['status'] == 'OK':
+                duration_text = data['routes'][0]['legs'][0]['duration']['text']
+                parts = duration_text.split(' ')
+                hours, minutes = 0, 0  
+                for i in range(len(parts)):
+                    if parts[i] == 'hour' or parts[i] == 'hours':
+                        travel_hours = int(parts[i - 1]) 
+                        if travel_hours == 0:
+                            travel_hours = None
+                    elif parts[i] == 'min' or parts[i] == 'mins':
+                        travel_minutes = int(parts[i - 1])
+                        if travel_minutes == 0:
+                            travel_minutes = None
+
+
         new_entry = DataBase(
             facility = form.facility.data,
             state = form.state.data,
             town = form.town.data,
             street = form.street.data,
             zip_code = form.zip_code.data,
-            distance_hour = form.distance_hour.data,
-            distance_min = form.distance_min.data,
+            distance_hour = travel_hours,
+            distance_min = travel_minutes,
             location_img_url = location_img_url,
             mass_email = form.mass_email.data,
         )
         db.session.add(new_entry)
         db.session.commit()
-
 
         if form.contact_person.data:
             new_contact = ContactTable(
