@@ -402,24 +402,29 @@ h2 {
 }
 
 .row4 {
-    width: 100%;
+    width: 95%;   
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
     align-items: center;
     margin: 50px;
-    margin-left: 0%;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 25px;
 }
 
 .row4Container {
-    width: 30%;
-    height: 500px;
+    flex: 1;
+    min-height: 590px;
+    min-width: 300px;
     background-color: #E7D2CC;
     border-radius: 30px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
+    padding: 10px;
 }
 
 .row4Container:hover .editAddBtn {
@@ -439,13 +444,43 @@ h2 {
 }
 
 .row4Marketing {
-    width: 63%;
-    height: 500px;
+    flex: 2;
+    min-height: 550px;
     background-color: #E7D2CC;
     border-radius: 30px;
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.marketDateContainer {
+    display: flex;
+    flex-wrap: wrap;
+    width: 90%;
+    padding: 15px;
+}
+
+.marketDateItems {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: solid 5px #B9B7BD;
+    border-radius: 10px;
+    margin: 10px;
+    /* margin-bottom: -20px; */
+    margin-top: -15px;
+}
+
+.dateMarketDiv {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
 }
 
 .row4Marketing:hover .editAddBtn {
@@ -722,19 +757,6 @@ p {
     color: black;
 }
 
-.marketDateItems {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 0px;
-    margin-bottom: -30px;
-    border: solid 5px #B9B7BD;
-    border-radius: 10px;
-}
-
 .linkString {
     color: black;
     text-decoration: none;
@@ -844,7 +866,7 @@ p {
     margin-right: auto;
     background-color: darkred;
     text-decoration: none;
-    width: 1000px;
+    width: 60%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -856,6 +878,7 @@ p {
 .importantDelete a {
     text-decoration: none;
     color: white;
+    text-align: center;
 }
 
 .massEmail {
@@ -879,9 +902,17 @@ p {
     padding-bottom: 10px;
 }
 
+.moveDown {
+    margin-top: 10px;
+}
+
+.centerText {
+    margin-left: auto;
+    margin-right: auto;
+}
 @media only screen and (max-width: 1200px) {
     .top-info {
-        width: 90%;
+        width: 85%;
     }
 
     .imgFacilityPageContainer {
@@ -920,4 +951,12 @@ p {
         font-size: 20px;
     }
 
+    .row4Marketing {
+        width: 85%;
+    }
+
+
+    .phoneVersion {
+        margin-left: -50px;
+    }
   }

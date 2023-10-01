@@ -87,9 +87,17 @@ def format_time(time):
 
 
 def format_date(date):
+    date = str(date)
     if '-' in date:
         date_object = datetime.strptime(date, '%Y-%m-%d')
         return date_object.strftime('%m/%d/%Y')
+
+
+def format_url_date(date):
+    date = str(date)
+    if '/' in date:
+        date_object = datetime.strptime(date, '%m/%d/%Y')
+        return date_object.strftime('%Y-%m-%d')
 
 
 def set_list_form_submit(form):
@@ -135,7 +143,7 @@ def marketing_form_submit(form):
     if form.marketing_list_physical_flyer.data:
         marketing_list.append('Physical Flyer')
     if form.marketing_list_electronic_flyer.data:
-        marketing_list.append('electronic Flyer')
+        marketing_list.append('Electronic Flyer')
     if form.marketing_list_physical_business_card.data:
         marketing_list.append('Physical Business Card')
     if form.marketing_list_epk.data:
@@ -146,6 +154,11 @@ def marketing_form_submit(form):
         marketing_list.append('Video Clip')
 
     return [marketing_list, date]
+
+
+def market_material_date():
+    pass
+
 
 
 def remove_unwanted_char_phone(phone_number):

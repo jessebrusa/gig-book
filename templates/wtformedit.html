@@ -29,15 +29,15 @@
                     </div>
                     {{ form.comments_list(class_='ckEditor') }}
                 {% endif %}
-                {% if date_market %}
+                {% if market_date_list %}
                     <h2><u>Marketing</u></h2>
                     <div class="formRow">
-                        <label class="leftItem">{{ date_market_label }}:</label>
-                        <input type="date" class="dateCalendar" name="date_{{ num }}">
+                        <label class="leftItem">{{ market_date_list[1] }}:</label>
+                        {{ form.marketing_date(class_='dateCalendar') }}
                     </div>
                     <div class="setList">
                         <div class="setListRow">
-                            {% if "Physical Flyer" in date_market_values %}
+                            {% if "Physical Flyer" in market_date_list[0] %}
                                 <div class="setListColumn"> 
                                     <label><u>Physical Flyer</u></label>
                                     {{ form.marketing_list_physical_flyer(class_='booleanField', checked=True) }}
@@ -48,7 +48,7 @@
                                     {{ form.marketing_list_physical_flyer(class_='booleanField') }}
                                 </div>
                             {% endif %}
-                            {% if "Electronic Flyer" in date_market_values %}
+                            {% if "Electronic Flyer" in market_date_list[0] %}
                                 <div class="setListColumn">
                                     <label><u>Electronic Flyer</u></label>
                                     {{ form.marketing_list_electronic_flyer(class_='booleanField', checked=True) }}
@@ -59,7 +59,7 @@
                                     {{ form.marketing_list_electronic_flyer(class_='booleanField') }}
                                 </div>
                             {% endif %}
-                            {% if "Physical Business Card" in date_market_values %}
+                            {% if "Physical Business Card" in market_date_list[0] %}
                                 <div class="setListColumn">
                                     <label><u>Physical Business Card</u></label>
                                     {{ form.marketing_list_physical_business_card(class_='booleanField', checked=True) }}
@@ -72,7 +72,7 @@
                             {% endif %}
                         </div>
                         <div class="setListRow">
-                            {% if "EPK" in date_market_values %}
+                            {% if "EPK" in market_date_list[0] %}
                                 <div class="setListColumn">
                                     <label><u>EPK</u></label>
                                     {{ form.marketing_list_epk(class_='booleanField', checked=True) }}
@@ -83,7 +83,7 @@
                                     {{ form.marketing_list_epk(class_='booleanField') }}
                                 </div>
                             {% endif %}
-                            {% if "Chocolate" in date_market_values %}
+                            {% if "Chocolate" in market_date_list[0] %}
                                 <div class="setListColumn">
                                     <label><u>Chocolate</u></label>
                                     {{ form.marketing_list_chocolate(class_='booleanField', checked=True) }}
@@ -94,7 +94,7 @@
                                     {{ form.marketing_list_chocolate(class_='booleanField') }}
                                 </div>
                             {% endif %}
-                            {% if "Video Clip" in date_market_values %}
+                            {% if "Video Clip" in market_date_list[0] %}
                                 <div class="setListColumn">
                                     <label><u>Video Clip</u></label>
                                     {{ form.marketing_list_video_clip(class_='booleanField', checked=True) }}

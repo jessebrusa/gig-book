@@ -502,15 +502,15 @@
                         </div>
                     {% endfor %}
                 {% endif %}
-                {% if date_market %}
+                {% if market_date_list %}
                     <h2><u>Marketing</u></h2>
-                    {% for num in range(date_market_len) %}
+                    {% for market_date in market_date_list %}
                         <div class="formRow">
-                            <label class="dateCenter">{{ date_market_labels[num] }}:</label>
+                            <label class="dateCenter">{{ market_date[1] }}:</label>
                         </div>
                         <div class="setList">
                             <div class="setListRow">
-                                {% if "Physical Flyer" in date_market_values[num] %}
+                                {% if "Physical Flyer" in market_date[0] %}
                                     <div class="setListColumn">
                                         <label><u>Physical Flyer</u></label>
                                         {{ form.marketing_list_physical_flyer(class_='booleanField', checked=True) }}
@@ -521,7 +521,7 @@
                                         {{ form.marketing_list_physical_flyer(class_='booleanField') }}
                                     </div>
                                 {% endif %}
-                                {% if "Electronic Flyer" in date_market_values[num] %}
+                                {% if "Electronic Flyer" in market_date[0] %}
                                     <div class="setListColumn">
                                         <label><u>Electronic Flyer</u></label>
                                         {{ form.marketing_list_electronic_flyer(class_='booleanField', checked=True) }}
@@ -532,7 +532,7 @@
                                         {{ form.marketing_list_electronic_flyer(class_='booleanField') }}
                                     </div>
                                 {% endif %}
-                                {% if "Physical Business Card" in date_market_values[num] %}
+                                {% if "Physical Business Card" in market_date[0] %}
                                     <div class="setListColumn">
                                         <label><u>Physical Business Card</u></label>
                                         {{ form.marketing_list_physical_business_card(class_='booleanField', checked=True) }}
@@ -545,7 +545,7 @@
                                 {% endif %}
                             </div>
                             <div class="setListRow">
-                                {% if "EPK" in date_market_values[num] %}
+                                {% if "EPK" in market_date[0] %}
                                     <div class="setListColumn">
                                         <label><u>EPK</u></label>
                                         {{ form.marketing_list_epk(class_='booleanField', checked=True) }}
@@ -556,7 +556,7 @@
                                         {{ form.marketing_list_epk(class_='booleanField') }}
                                     </div>
                                 {% endif %}
-                                {% if "Chocolate" in date_market_values[num] %}
+                                {% if "Chocolate" in market_date[0] %}
                                     <div class="setListColumn">
                                         <label><u>Chocolate</u></label>
                                         {{ form.marketing_list_chocolate(class_='booleanField', checked=True) }}
@@ -567,7 +567,7 @@
                                         {{ form.marketing_list_chocolate(class_='booleanField') }}
                                     </div>
                                 {% endif %}
-                                {% if "Video Clip" in date_market_values[num] %}
+                                {% if "Video Clip" in market_date[0] %}
                                     <div class="setListColumn">
                                         <label><u>Video Clip</u></label>
                                         {{ form.marketing_list_video_clip(class_='booleanField', checked=True) }}
@@ -581,8 +581,13 @@
                             </div>
                         </div>
                         <div class="formRow">
-                            <a class="editBtn" href="{{ url_for('wtform_edit', id=facility.id, field='market_date', data=num) }}">EDIT</a>
-                            <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='market_date', data=num) }}">DELETE</a>
+                            {% if market_date[2] %}
+                                <a class="editBtn" href="{{ url_for('wtform_edit', id=facility.id, field='market_date', data=market_date[2]) }}">EDIT</a>
+                                <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='market_date', data=market_date[2]) }}">DELETE</a>
+                            {% else %}
+                                <a class="editBtn" href="{{ url_for('wtform_edit', id=facility.id, field='market_date', data='NONE') }}">EDIT</a>
+                                <a class="delete" href="{{ url_for('delete_data', id=facility.id, field='market_date', data='NONE') }}">DELETE</a>
+                            {% endif %}
                         </div>
                     {% endfor %} 
                 {% endif %}   

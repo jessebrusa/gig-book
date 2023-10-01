@@ -6,7 +6,7 @@ feedback_list_items, LoginForm, MassEmailForm
 from resources import split_list, ext_phone, phone_to_string, format_duration, \
 split_break_day_time, split_break_itemOne_itemTwo, split_break, list_length, \
 split_colon_market_date, compare_field, add_data_method, last_item, image_url, \
-add_two_data_method, add_date_item_method, market_date_method, \
+add_two_data_method, add_date_item_method, market_date_method, format_url_date, \
 add_ckeditor_comment_testimonial_method, compare_field_return_data, compare_field_address, \
 split_break_date_item, edit_data_method, delete_data_method, edit_address_method, \
 edit_mass_email_method, edit_data_method_break, set_list_form_submit, split_break_dates, \
@@ -402,28 +402,24 @@ def form():
                 db.session.commit()
 
         if form.venue_type.data:
-            if form.venue_type.data == 'None':
-                venue_type = None
-            else:
+            if form.venue_type.data != 'None':
                 venue_type = form.venue_type.data
-            new_venue = VenueTypeTable(
-                venue = venue_type,
-                data_base_id = new_entry.id
-            )
-            db.session.add(new_venue)
-            db.session.commit()
+                new_venue = VenueTypeTable(
+                    venue = venue_type,
+                    data_base_id = new_entry.id
+                )
+                db.session.add(new_venue)
+                db.session.commit()
 
         if form.performance_type.data:
             if form.performance_type.data != 'None':
                 performance_type = form.performance_type.data
-            else:
-                performance_type = None
-            new_performance = PerformanceTypeTable(
-                performance = performance_type,
-                data_base_id = new_entry.id
-            )
-            db.session.add(new_performance)
-            db.session.commit()
+                new_performance = PerformanceTypeTable(
+                    performance = performance_type,
+                    data_base_id = new_entry.id
+                )
+                db.session.add(new_performance)
+                db.session.commit()
 
 
         if form.duration_hour.data or form.duration_min.data:
@@ -463,6 +459,7 @@ def form():
             marketing_list = marketing_list_date[0]
             if marketing_list_date[1]:
                 date = marketing_list_date[1]
+                date = format_date(date)
             else:
                 date = None
             for item in marketing_list:
@@ -515,14 +512,20 @@ def facility_page(id):
         setlist = sorted(setlist)
         
 
-    # market_date_list = [[item.material, item.date] for item in facility.marketing]
-    market_date_table = return_list(facility.marketing, date)
-    market_date_list = []
-    for date in market_date_table:
-        material_list = [date]
-        for item in facility.marketing:
-            if date == item.date:
-                material_list.append(item.material)
+ 
+    market_date_table = return_list(facility.marketing, 'date')
+    if market_date_table:
+        market_date_list = []
+        date_list = []
+        facility_marketing = facility.marketing
+        for date in market_date_table:
+            if date not in date_list:
+                materials = [item.material for item in facility_marketing if item.date == date]
+                market_date_list.append([materials, date])
+                date_list.append(date)
+    else:
+        market_date_list = None
+
 
   
     feedback_array = split_list(facility.date_feedback_list)
@@ -535,7 +538,7 @@ def facility_page(id):
     testimonial_list_length = list_length(testimonial_array)
 
     return render_template('facility-page.html', facility=facility, price_date_list=price_date_list, setlist=setlist,
-                           market_date_list=market_date_list,contact_person=contact_person, id=id,
+                           market_date_list=market_date_list, contact_person=contact_person, id=id,
                            phone_number=phone_number, email=email, venue_type=venue_type, performance_type=performance_type, 
                            day_time_list=day_time_list,comments_list=comments_list, duration_list=duration_list,
                            comments_list_length=comments_list_length,feedback_list=feedback_list, feedback_list_length=feedback_list_length ,
@@ -673,11 +676,22 @@ def commit_add_data(id, field):
                 db.session.commit()
 
 
-
-        new_market_date = market_date_method('market_date', field, 
-                                             facility.date_marketing_list)
-        if new_market_date:
-            facility.date_marketing_list = new_market_date
+        if field == 'market_date':
+            marketing_list_date = marketing_form_submit(form)
+            if marketing_list_date:
+                marketing_list = marketing_list_date[0]
+                if marketing_list_date[1]:
+                    date = format_date(marketing_list_date[1])
+                else:
+                    date = None
+                for item in marketing_list:
+                    new_marketing = MarketingTable(
+                        material = item,
+                        date = date,
+                        data_base_id = id,
+                    )
+                    db.session.add(new_marketing)
+                    db.session.commit()
 
 
         new_comment = add_ckeditor_comment_testimonial_method('comments', field, 
@@ -769,14 +783,25 @@ def edit_field(id, field):
         setlist = None
         setlist_true = None
 
-    date_market = compare_field_return_data('market_date', field, facility.date_marketing_list)
-    if date_market:
-        date_market_labels = split_break_dates(date_market)[0]
-        date_market_values = split_break_dates(date_market)[1]
+
+    if 'market_date' == field:
+        market_date_table = return_list(facility.marketing, 'date')
+        if market_date_table:
+            market_date_list = []
+            date_list = []
+            facility_marketing = facility.marketing
+            for date in market_date_table:
+                if date not in date_list:
+                    materials = [item.material for item in facility_marketing if item.date == date]
+                    url_date = format_url_date(date)
+                    market_date_list.append([materials, date, url_date])
+                    date_list.append(date)
     else:
-        date_market_labels = None
-        date_market_values = None
-    date_market_len = list_length(date_market)
+        market_date_list = None
+
+
+
+    
     comments = compare_field_return_data('comments', field, facility.comments_list)
     comments_len = list_length(comments)
     feedback = compare_field_return_data('feedback', field, facility.date_feedback_list)
@@ -807,8 +832,8 @@ def edit_field(id, field):
                            venue_types=venue_types, venue_type_list=venue_type_list, performance_types=performance_types,
                            performance_type_list=performance_type_list, duration_list=duration_list, venue_box=venue_box, price_date_list=price_date_list,
                            weekdays=weekdays, 
-                           setlist=setlist, date_market=date_market, date_market_len=date_market_len, date_market_labels=date_market_labels,
-                           date_market_values=date_market_values, comments=comments, comments_len=comments_len, feedback=feedback, feedback_len=feedback_len,
+                           setlist=setlist, market_date_list=market_date_list,
+                           comments=comments, comments_len=comments_len, feedback=feedback, feedback_len=feedback_len,
                            feedback_list_items=feedback_list_items, feedback_dates=feedback_dates, feedback_values=feedback_values, testimonials_list=testimonials_list,
                            testimonial_dates=testimonial_dates, testimonial_values=testimonial_values, testimonials_list_len=testimonials_list_len)
 
@@ -930,16 +955,19 @@ def wtform_edit(id, field, data):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
 
-    date_market_items = wtf_edit_data_market('market_date', field, data,
-                                             facility.date_marketing_list)
-    if date_market_items:
-        date_market = date_market_items[0]
-        date_market_label = date_market_items[1]
-        date_market_values = date_market_items[2]
+    if 'market_date' == field:
+        market_date_table = return_list(facility.marketing, 'date')
+        if market_date_table:
+            date = format_date(data)
+            materials = [item.material for item in facility.marketing if item.date == date]
+            url_date = format_url_date(date)
+
+            market_date_list = [materials, date, url_date]
+        else:
+            market_date_list = None
     else:
-        date_market = None
-        date_market_label = None
-        date_market_values = None
+        market_date_list = None
+
 
 
     comment = wtf_edit_method('comments', field,
@@ -959,7 +987,7 @@ def wtform_edit(id, field, data):
         testimonial_value = None
     
     return render_template('wtformedit.html', id=id, field=field, data=data, facility=facility, form=form,
-                           date_market=date_market, date_market_label=date_market_label, date_market_values=date_market_values,
+                           market_date_list=market_date_list,
                            comment=comment, testimonial_item=testimonial_item, testimonial_date=testimonial_date,
                            testimonial_value=testimonial_value)
 
@@ -973,14 +1001,36 @@ def wtform_commit(id, field, data):
 
     if request.method == 'POST':
 
-        edit_date_market = marketing_list_form_submit('market_date', field, form,
-                                                        facility.date_marketing_list, data)
-        if edit_date_market:
-            facility.date_marketing_list = edit_date_market
-            if facility.date_marketing_list is not None:
-                db.session.commit()
-                return redirect(url_for('edit_field', id=id, field='market_date'))
-              
+        if 'market_date' == field:
+            date = format_date(data)
+            new_date = form.marketing_date.data
+            new_material_list = marketing_form_submit(form)
+
+            material_delete_list = [item.id for item in facility.marketing if item.date == date]
+            if len(material_delete_list) >= 0:
+                for item in material_delete_list:
+                    delete_material = MarketingTable.query.filter_by(id=item).first()
+                    db.session.delete(delete_material)
+                    db.session.commit()
+
+            material_add_list = [item for item in new_material_list][0]
+            if new_date:
+                date = format_date(new_date)
+            if len(material_add_list) >= 0:
+                for item in material_add_list:
+                    new_material = MarketingTable(
+                        material = item,
+                        date = date,
+                        data_base_id = id,
+                    )
+                    db.session.add(new_material)
+                    db.session.commit()
+
+            if len(facility.marketing) == 0:
+                return redirect(url_for('facility_page', id=id))
+            
+
+
         edit_comment = wtf_edit_ckeditor('comments', field, facility.comments_list, data, form)
         if edit_comment:
             facility.comments_list = edit_comment
@@ -1016,7 +1066,7 @@ def previous_contact(id):
                            phone_list=phone_list, email_list=email_list)
 
 
-@app.route('/delete/<int:id>/<field>/<int:data>', methods=['GET', 'POST'])
+@app.route('/delete/<int:id>/<field>/<data>', methods=['GET', 'POST'])
 # @admin_only
 def delete_data(id, field, data):
     facility = DataBase.query.filter_by(id=id).first()
@@ -1055,7 +1105,6 @@ def delete_data(id, field, data):
             return redirect(url_for('facility_page', id=id))
         
 
-
     if field == 'venue_type':
         delete_venue = VenueTypeTable.query.filter_by(id=data).first()
         db.session.delete(delete_venue)
@@ -1084,17 +1133,20 @@ def delete_data(id, field, data):
             db.session.commit()
             return redirect(url_for('facility_page', id=id))
 
-
-    delete_date_market = delete_data_method('market_date', field,
-                                            facility.date_marketing_list,
-                                            data, False)
-    if delete_date_market:
-        if delete_date_market == 'None':
-            facility.date_marketing_list = None
-            db.session.commit()
-            return redirect(url_for('facility_page', id=id))
+    if field == 'market_date':
+        facility_marketing = facility.marketing
+        if data == 'NONE':
+            delete_items = [item for item in facility_marketing if item.date is None]
         else:
-            facility.date_marketing_list = delete_date_market
+            date = format_date(data)
+            delete_items = [item for item in facility_marketing if item.date == date]
+        for item in delete_items:
+            delete_marketing = MarketingTable.query.filter_by(id=item.id).first()
+            db.session.delete(delete_marketing)
+            db.session.commit()
+            if return_table_list(facility.marketing) is None:
+                db.session.commit()
+                return redirect(url_for('facility_page', id=id))
 
 
     delete_comment = delete_data_method('comments', field,
@@ -1223,8 +1275,7 @@ def mass_email_page():
 
         facilities = DataBase.query.all()
         facilities_email_true = [facility for facility in facilities if facility.mass_email]
-        facility_email_list = [split_list(facility.email)[-1] for facility in facilities_email_true]
-               
+        facility_email_list = [facility.email[-1].email for facility in facilities_email_true]
 
         if attachment_path:
             for email in facility_email_list:

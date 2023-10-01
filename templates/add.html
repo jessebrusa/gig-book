@@ -192,39 +192,39 @@
                 {% if market_date %}
                     <h2><u>Marketing</u></h2>
                     <div class="formRow">
-                        <label class="leftItem">Date:</label>
-                        <input type="date" class="dateCalendar" name="date_">
+                        <label class="leftItem">Marketing Date:</label>
+                        {{ form.marketing_date(class_='dateCalendar') }}
                     </div>
                     <div class="setList">
                         <div class="setListRow">
                             <div class="setListColumn">
                                 <label><u>Physical Flyer</u></label>
-                                <input type="checkbox" name="physical_flyer_" class="booleanField">
+                                {{ form.marketing_list_physical_flyer(class_='booleanField') }}
                             </div>
                             <div class="setListColumn">
                                 <label><u>Electronic Flyer</u></label>
-                                <input type="checkbox" name="electronic_flyer_" class="booleanField">
+                                {{ form.marketing_list_electronic_flyer(class_='booleanField') }}
                             </div>
                             <div class="setListColumn">
                                 <label><u>Physical Business Card</u></label>
-                                <input type="checkbox" name="business_card_" class="booleanField">
+                                {{ form.marketing_list_physical_business_card(class_='booleanField') }}
                             </div>
                         </div>
                         <div class="setListRow">
                             <div class="setListColumn">
                                 <label><u>EPK</u></label>
-                                <input type="checkbox" name="epk_" class="booleanField">
+                                {{ form.marketing_list_epk(class_='booleanField') }}
                             </div>
                             <div class="setListColumn">
                                 <label><u>Chocolate</u></label>
-                                <input type="checkbox" name="chocolate_" class="booleanField">
+                                {{ form.marketing_list_chocolate(class_='booleanField') }}
                             </div>
                             <div class="setListColumn">
                                 <label><u>Video Clip</u></label>
-                                <input type="checkbox" name="video_" class="booleanField">
+                                {{ form.marketing_list_video_clip(class_='booleanField') }}
                             </div>
                         </div>
-                    </div> 
+                    </div>   
                 {% endif %}   
             </div>
             {{ form.submit(class_='submitButton') }} 

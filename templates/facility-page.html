@@ -4,7 +4,7 @@
         <div class="top-info" >
             <div class="editAddContainer">
                 <h1>{{ facility.facility }}</h1>
-                <div class="editAddBtn">
+                <div class="editAddBtn phone">
                     <a href="{{ url_for('edit_field', id=facility.id, field='facility') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
                 </div>
             </div>
@@ -134,7 +134,7 @@
                 <div class="venueContainer venueSpace">
                     <h2 class="venueH2"><u>Venue Type:</u></h2>
                     <div class="venueItems">
-                        {% if venue_type[0] %}
+                        {% if venue_type %}
                             {% for venue in venue_type %}
                                 <h3>{{ venue }}</h2>
                             {% endfor %}
@@ -148,7 +148,7 @@
                 <div class="venueContainer">
                     <h2 class="venueH2"><u>Performance Type:</u></h2>
                     <div class="venueItems">
-                        {% if performance_type[0] %}
+                        {% if performance_type %}
                             {% for performance in performance_type %}
                                 <h3>{{ performance }}</h2>
                             {% endfor %}
@@ -223,12 +223,12 @@
         <div class="row4Marketing">
             <div class="dateMarketDiv">
                 {% if market_date_list %}
-                    <div class="editAddBtn marginUpNeg centerBtn">
+                    <div class="editAddBtn marginUpNeg centerBtn moveDown">
                         <a href="{{ url_for('edit_field', id=facility.id, field='market_date') }}"><img src="../static/img/icons8-edit-30.png" alt="image of a pencil to edit"></a>
                         <a href="{{ url_for('add_data', id=facility.id, field='market_date') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
                     </div>
                 {% else %}
-                    <div class="editAddBtn marginUpNeg centerBtn">
+                    <div class="editAddBtn marginUpNeg centerBtn moveDown">
                         <a href="{{ url_for('add_data', id=facility.id, field='market_date') }}"><img src="../static/img/icons8-plus-24.png" alt="image of a plus sign to add"></a>
                     </div>
                 {% endif %}
@@ -240,12 +240,14 @@
                                     <h2><u>{{ date_market[1] }}</u></h2>
                                 {% endif %}
                                 {% if date_market[0] %}
-                                    <h2>{{ date_market[0] }}</h2>
+                                    {% for market in date_market[0] %}
+                                        <h2>{{ market }}</h2>
+                                    {% endfor %}
                                 {% endif %}
                             </div>  
                         {% endfor %}
                     {% else %}
-                        <h2><u>Marketing Material By Date:</u></h2>   
+                        <h2 class="centerText"><u>Marketing Material By Date:</u></h2>   
                     {% endif %}           
                 </div>
             </div>    
