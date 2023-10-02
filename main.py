@@ -15,8 +15,6 @@ from flask_login import UserMixin, login_user, LoginManager, current_user, logou
 from functools import wraps
 from werkzeug.utils import secure_filename
 import requests
-from markupsafe import Markup
-from flask_mail import Message
 import os
 import re
 
@@ -1246,6 +1244,11 @@ def delete_data(id, field, data):
     return redirect (url_for('edit_field', id=id, field=field))
 
 
+@app.route('/delete-confirm/<int:id>', methods=['GET', 'POST'])
+def confirm_page(id):
+    facility = DataBase.query.filter_by(id=id).first()
+    return render_template('confirm.html', facility_name=facility.facility, id=id)
+
 @app.route('/delete-contact/<int:id>', methods=['GET', 'POST'])
 # @admin_only
 def delete_contact(id):
@@ -1330,7 +1333,6 @@ def mass_email_page():
              attachment_path = None
         subject = mass_email_form.subject.data
         body = mass_email_form.body.data
-        body = Markup(body)
 
         facilities = DataBase.query.all()
         facilities_email_true = [facility for facility in facilities if facility.mass_email]

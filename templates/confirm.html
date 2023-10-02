@@ -1,0 +1,15 @@
+{% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<body>
+    <h1 class="gigs editGigs">Delete Contact</h1>
+        <div class="formContainerColumn">
+           <h2>Are You Sure You Want To Delete:</h2>
+           <h2>{{ facility_name }}</h2>
+           <div class="formRow">
+                <a href="{{ url_for('delete_contact', id=id) }}" class="delete">Yes</a>
+                <a href="{{ url_for('facility_page', id=id) }}" class="delete noDelete">No</a>
+            </div>
+        </div> 
+</body>
+</html>

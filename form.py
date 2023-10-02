@@ -111,3 +111,4 @@ class MassEmailForm(FlaskForm):
     subject = StringField('Subject', validators=[DataRequired()])
     body = CKEditorField('Body', validators=[DataRequired()])
     submit = SubmitField('Submit')
+
