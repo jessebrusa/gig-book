@@ -356,7 +356,7 @@ def send_email_with_attachment(subject, body, recipient, **kwargs):
     msg['From'] = sender
     msg['To'] = recipient
 
-    msg.attach(MIMEText(body, 'plain'))
+    msg.attach(MIMEText(body, 'html'))
 
     if kwargs.get('attachment'):
         attachment_filename = kwargs.get('attachment')

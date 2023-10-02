@@ -15,7 +15,10 @@ from flask_login import UserMixin, login_user, LoginManager, current_user, logou
 from functools import wraps
 from werkzeug.utils import secure_filename
 import requests
+from markupsafe import Markup
+from flask_mail import Message
 import os
+import re
 
 
 app = Flask(__name__)
@@ -44,6 +47,7 @@ class DataBase(db.Model):
     distance_min = db.Column(db.Integer)
     location_img_url = db.Column(db.String(250))
     mass_email = db.Column(db.Boolean)
+    mileage = db.Column(db.Integer)
 
     contact_person = db.relationship('ContactTable')
     email = db.relationship('EmailTable')
@@ -331,17 +335,26 @@ def form():
 
             if data['status'] == 'OK':
                 duration_text = data['routes'][0]['legs'][0]['duration']['text']
+                distance_text = data['routes'][0]['legs'][0]['distance']['text']
                 parts = duration_text.split(' ')
-                hours, minutes = 0, 0  
+                travel_hours, travel_minutes = 0, 0  
                 for i in range(len(parts)):
                     if parts[i] == 'hour' or parts[i] == 'hours':
-                        travel_hours = int(parts[i - 1]) 
+                        travel_hours = int(parts[i - 1])
                         if travel_hours == 0:
                             travel_hours = None
                     elif parts[i] == 'min' or parts[i] == 'mins':
                         travel_minutes = int(parts[i - 1])
                         if travel_minutes == 0:
                             travel_minutes = None
+                distance_numeric = re.search(r'\d+', distance_text)
+    
+                if distance_numeric:
+                    distance_numeric = int(distance_numeric.group())
+                else:
+                    distance_numeric = None  
+                
+
 
 
         new_entry = DataBase(
@@ -354,6 +367,7 @@ def form():
             distance_min = travel_minutes,
             location_img_url = location_img_url,
             mass_email = form.mass_email.data,
+            mileage = distance_numeric,
         )
         db.session.add(new_entry)
         db.session.commit()
@@ -1110,11 +1124,11 @@ def wtform_commit(id, field, data):
 def previous_contact(id):
     facility = DataBase.query.filter_by(id=id).first()
 
-    contact_list = return_list(facility.contact_person)
+    contact_list = return_list(facility.contact_person, 'contact_person')
 
-    phone_list = return_list(facility.phone_number)
+    phone_list = return_list(facility.phone_number, 'phone_number')
 
-    email_list = return_list(facility.email)
+    email_list = return_list(facility.email, 'email')
 
 
     return render_template('previous.html', id=id, contact_list=contact_list, 
@@ -1316,17 +1330,20 @@ def mass_email_page():
              attachment_path = None
         subject = mass_email_form.subject.data
         body = mass_email_form.body.data
+        body = Markup(body)
 
         facilities = DataBase.query.all()
         facilities_email_true = [facility for facility in facilities if facility.mass_email]
         facility_email_list = [facility.email[-1].email for facility in facilities_email_true]
-
+        
         if attachment_path:
             for email in facility_email_list:
                 send_email_with_attachment(subject, body, email, attachment=attachment_path)
+            os.remove(attachment_path)
         else:
             for email in facility_email_list:
                 send_email_with_attachment(subject, body, email)
+
 
         return redirect(url_for('home'))
 

@@ -109,5 +109,5 @@ class LoginForm(FlaskForm):
 class MassEmailForm(FlaskForm):
     attachment = FileField('Choose File')
     subject = StringField('Subject', validators=[DataRequired()])
-    body = TextAreaField('Body', validators=[DataRequired()])
+    body = CKEditorField('Body', validators=[DataRequired()])
     submit = SubmitField('Submit')
