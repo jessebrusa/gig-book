@@ -1,0 +1,37 @@
+{% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<body>
+    <h1 class="gigs editGigs">Edit Your Contact</h1>
+    <form method="POST" action="{{ url_for('invoice_form', id=id) }}">
+        {{ form.hidden_tag() }}
+        {{ ckeditor.load() }}  
+        <div class="formContainerColumn">
+            <div class="returnContainer">
+                <a href="{{ url_for('facility_page', id=id) }}">Return</a>
+            </div>
+            <h1 class="contactH1">Heather Rae Gigs</h1>
+            <div class="formContainer">
+                <div class="formRow">
+                    <label class="leftItem">Title:</label>
+                    {{ form.title(class_='inputField') }}
+                </div>
+                <a href="{{ url_for('add_title', id=id) }}" class="editBtn addTitle">Add or Delete<br>Title</a>
+                <div class="formRow">
+                    <label class="leftItem">Date:</label>
+                    {{ form.date(class_='dateCalendar') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Price:</label>
+                    {{ form.price(class_='inputField') }}
+                </div>
+                <div class="formRow">
+                    <label class="leftItem">Description:</label>
+                    {{ form.description(class_='textArea') }}
+                </div>
+            </div>
+            {{ form.submit(class_='submitButton') }} 
+        </div> 
+    </form>
+</body>
+</html>

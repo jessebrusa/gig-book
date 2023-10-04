@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, \
     EmailField, SelectField, IntegerField, FileField, BooleanField, \
-    DateField, TimeField, TextAreaField
+    DateField, TimeField, TextAreaField, FloatField
 from wtforms.validators import DataRequired
 from flask_ckeditor import CKEditorField
 
@@ -38,6 +38,11 @@ feedback_list_items = [('Volume Low'), ('Volume High'), ('Less Upbeat'),
 marketing_list_items = [('Physical Flyer'), ('Electronic Flyer'), ('Physical Business Cards'),
                         ('EPK'), ('Chocolate'), ('Video Clip'), ('Post Card')]
 
+
+performance_title_list = [('Hope with Heather Rae'), ('Get Happy with Heather Rae'), ('Come Away with Heather Rae'),
+                          ('In the Arms of the Angel with Heather Rae'), ('A Christmas Miracle with Heather Rae'),
+                          ('God Bless the USA with Heather Rae'), ('Worship with Heather Rae'), ('Hymns with Heather Rae'),
+                          ('Give Thanks with Heather Rae')]
 
 class AddressBookForm(FlaskForm):
     facility = StringField('Facility Name', validators=[DataRequired()])
@@ -113,3 +118,15 @@ class MassEmailForm(FlaskForm):
     body = CKEditorField('Body', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
+
+class InvoiceForm(FlaskForm):
+    title = SelectField('Title Choices')
+    date = DateField('Date', validators=[DataRequired()])
+    price = FloatField('Price', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+class AddTitleForm(FlaskForm):
+    title = StringField('Title')
+    submit = SubmitField('Submit')

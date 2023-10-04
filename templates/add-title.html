@@ -1,0 +1,28 @@
+{% include "header.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+<body>
+    <h1 class="gigs editGigs">Edit Your Contact</h1>
+    <form method="POST" action="{{ url_for('add_title', id=id) }}">
+        {{ form.hidden_tag() }}
+        <div class="formContainerColumn">
+            <div class="returnContainer">
+                <a href="{{ url_for('invoice_form', id=id) }}">Return</a>
+            </div>
+            <h1 class="contactH1">Heather Rae Gigs</h1>
+            <div class="formContainer">
+                {% for title in titles %}
+                    <div class="formRow centerRow">
+                        <label class="leftItem">{{ title.title }}:</label>
+                        <a class="delete" href="{{ url_for('delete_data', id=id, field='title', data=title.id) }}">DELETE</a>    
+                    </div>
+                {% endfor %}
+                <div class="formRow">
+                    <label class="leftItem">New Title:</label>
+                    {{ form.title(class_='inputField') }}
+                </div>
+            {{ form.submit(class_='submitButton') }} 
+        </div> 
+    </form>
+</body>
+</html>

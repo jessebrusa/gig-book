@@ -332,6 +332,9 @@
             <h2><u>Add a Testimonial:</u></h2>
         </div>
     {% endif %}
+    <div class="importantDelete invoiceBtn">
+        <a href="{{ url_for('invoice_form', id=id) }}">Generate Invoice</a>
+    </div>
     <div class="importantDelete">
         <a href="{{ url_for('confirm_page', id=id) }}">DELETE CONTACT</a>
     </div>

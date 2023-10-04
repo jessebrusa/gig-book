@@ -1,20 +1,21 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, make_response
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from form import AddressBookForm, weekdays, venue_type_list, performance_type_list, \
-feedback_list_items, LoginForm, MassEmailForm
+feedback_list_items, LoginForm, MassEmailForm, InvoiceForm, AddTitleForm
 from resources import ext_phone, phone_to_string, format_duration, compare_field, last_item, image_url, \
 format_url_date, compare_field_return_data, compare_field_address, edit_data_method,  edit_address_method, \
 date_key, edit_mass_email_method, set_list_form_submit, generate_hash_salt, bible_url, params, \
 send_email_with_attachment, attachment_url, check_for_data_return_last, return_list, edit_database, \
 format_time, edit_two_database, return_table_list, format_date, marketing_form_submit, \
-remove_unwanted_char_phone, MAPS_DIRECTIONS_API_KEY, ORIGIN
+remove_unwanted_char_phone, MAPS_DIRECTIONS_API_KEY, ORIGIN, date_add_days, float_decimal_one
 from werkzeug.security import check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from functools import wraps
 from werkzeug.utils import secure_filename
 import requests
+import pdfkit
 import os
 import re
 
@@ -22,6 +23,7 @@ import re
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'das;jklfaowye83oi;jkasdofiu8ow11'
 app.config['UPLOAD_FOLDER'] = './static/location_img'
+app.config['PDFKIT_EXECUTABLE'] = '/usr/local/bin/wkhtmltopdf' 
 ckeditor = CKEditor(app)
 Bootstrap(app)
 
@@ -31,6 +33,7 @@ db = SQLAlchemy(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
 
 
 class DataBase(db.Model):
@@ -60,6 +63,7 @@ class DataBase(db.Model):
     comments = db.relationship('CommentsTable')
     feedback = db.relationship('FeedbackTable')
     testimonials = db.relationship('TestimonialTable')
+    invoice = db.relationship('InvoiceTable')
 
 
 class ContactTable(db.Model):
@@ -172,6 +176,24 @@ class TestimonialTable(db.Model):
     data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
 
 
+class InvoiceTable(db.Model):
+    __tablename__ = 'invoice_table'
+    id = db.Column(db.Integer, primary_key=True)
+    facility = db.Column(db.String(250))
+    street = db.Column(db.String(250))
+    town = db.Column(db.String(250))
+    state = db.Column(db.String(250))
+    zip_code = db.Column(db.String(250))
+    date = db.Column(db.String(250))
+    due_date = db.Column(db.String(250))
+    price = db.Column(db.Float)
+    title = db.Column(db.String(250))
+    description = db.Column(db.String(250))
+    paid = db.Column(db.Boolean, default=False)
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
+    
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -179,6 +201,12 @@ class User(UserMixin, db.Model):
     l_name = db.Column(db.String(250), nullable=False)
     email = db.Column(db.String(250), nullable=False)
     password = db.Column(db.String(250), nullable=False)
+
+
+class PerformanceTitle(db.Model):
+    __tablename__ = 'performance_title'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(250), nullable=False)
 
 
 with app.app_context():
@@ -190,7 +218,7 @@ def load_user(user_id):
     return db.session.get(User, int(user_id))
 
 
-def admin_only(f):
+def logged_in_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         try:
@@ -204,7 +232,7 @@ def admin_only(f):
 
 
 @app.route('/', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def home():
     facilities = DataBase.query.all()
     
@@ -303,7 +331,7 @@ def home():
 
 
 @app.route('/form', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def form():
     form = AddressBookForm()
 
@@ -539,7 +567,7 @@ def form():
 
 
 @app.route('/facility/<int:id>', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def facility_page(id):
     facility = DataBase.query.filter_by(id=id).first()
 
@@ -600,7 +628,7 @@ def facility_page(id):
 
 
 @app.route('/add/<int:id>/<field>', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def add_data(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -626,7 +654,7 @@ def add_data(id, field):
 
 
 @app.route('/commit-add/<int:id>/<field>', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def commit_add_data(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -797,7 +825,7 @@ def commit_add_data(id, field):
 
 
 @app.route('/edit-field/<int:id>/<field>', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def edit_field(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -908,7 +936,7 @@ def edit_field(id, field):
 
 
 @app.route('/commit-edit/<int:id>/<field>', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def commit_edit(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -1054,7 +1082,7 @@ def commit_edit(id, field):
 
 
 @app.route('/wtformedit/<int:id>/<field>/<data>', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def wtform_edit(id, field, data):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -1092,7 +1120,7 @@ def wtform_edit(id, field, data):
 
 
 @app.route('/wtformcommit/<int:id>/<field>/<data>', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def wtform_commit(id, field, data):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -1153,7 +1181,7 @@ def wtform_commit(id, field, data):
 
 
 @app.route('/previous-contact-data/<int:id>')
-# @admin_only
+# @logged_in_only
 def previous_contact(id):
     facility = DataBase.query.filter_by(id=id).first()
 
@@ -1169,7 +1197,7 @@ def previous_contact(id):
 
 
 @app.route('/delete/<int:id>/<field>/<data>', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def delete_data(id, field, data):
     facility = DataBase.query.filter_by(id=id).first()
     data = data
@@ -1275,6 +1303,12 @@ def delete_data(id, field, data):
             return redirect(url_for('facility_page', id=id))
 
 
+    if field == 'title':
+        delete_title = PerformanceTitle.query.filter_by(id=data).first()
+        db.session.delete(delete_title)
+        db.session.commit()
+        return redirect(url_for('add_title', id=id))
+
     db.session.commit()
     return redirect (url_for('edit_field', id=id, field=field))
 
@@ -1285,7 +1319,7 @@ def confirm_page(id):
     return render_template('confirm.html', facility_name=facility.facility, id=id)
 
 @app.route('/delete-contact/<int:id>', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def delete_contact(id):
     facility = DataBase.query.filter_by(id=id).first()
 
@@ -1352,7 +1386,7 @@ def register_page():
 
 
 @app.route('/mass-email', methods=['GET', 'POST'])
-# @admin_only
+# @logged_in_only
 def mass_email_page():
     mass_email_form = MassEmailForm()
 
@@ -1386,6 +1420,88 @@ def mass_email_page():
 
     return render_template('mass-email.html', form=mass_email_form)
 
+
+@app.route('/invoice-form/<int:id>', methods=['GET', 'POST'])
+# @logged_in_only
+def invoice_form(id):
+    facility = DataBase.query.filter_by(id=id).first()
+    form = InvoiceForm()
+
+    title_objects = PerformanceTitle.query.all()
+    titles = [title.title for title in title_objects]
+    form.title.choices = [(title) for title in titles]
+
+    if request.method == 'POST':
+        form_title = form.title.data
+        form_date = format_date(form.date.data)
+        form_price = form.price.data
+        form_description = form.description.data
+
+        new_invoice = InvoiceTable (
+            facility = facility.facility,
+            street = facility.street,
+            town = facility.town,
+            state = facility.state,
+            zip_code = facility.zip_code,
+            date = form_date,
+            due_date = date_add_days(form_date, 30),
+            price = form_price,
+            title = form_title,
+            description = form_description,
+            data_base_id = id,
+        )
+        db.session.add(new_invoice)
+        db.session.commit()
+
+        invoice_id = new_invoice.id
+
+        return redirect(url_for('invoice', invoice_id=invoice_id))
+
+
+    return render_template('invoice-form.html', id=id, form=form)
+
+
+@app.route('/add-title/<int:id>', methods=['GET', 'POST'])
+# @logged_in_only
+def add_title(id):
+    form = AddTitleForm()
+    titles = PerformanceTitle.query.all()
+
+    if request.method == 'POST':
+        form_title = form.title.data
+
+        if form_title:
+            new_title = PerformanceTitle(
+                title = form_title
+            )
+            db.session.add(new_title)
+            db.session.commit()
+
+            return redirect(url_for('invoice_form', id=id))
+
+
+    return render_template('add-title.html', form=form, id=id, titles=titles)
+
+
+@app.route('/invoice/<int:invoice_id>', methods=['GET', 'POST'])
+# @logged_in_only
+def invoice(invoice_id):
+    invoice = InvoiceTable.query.filter_by(id=invoice_id).first()
+    invoice_price = invoice.price
+    price_end_with_zero = float_decimal_one(invoice.price)
+    if price_end_with_zero:
+        invoice_price = str(invoice_price) + '0'
+
+
+    return render_template('invoice.html', invoice=invoice, invoice_price=invoice_price)
+
+
+@app.route('/invoice-list')
+# @logged_in_only
+def invoice_list():
+    invoices = InvoiceTable.query.all()
+
+    return render_template('invoice-list.html', invoices=invoices)
 
 @app.route('/logout')
 def logout():

@@ -3,10 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/invoice.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='../static/css/stylesheet.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='../static/css/invoice.css') }}">
     <title>Invoice</title>
 </head>
 <body>
+    <div class="centerNav hoverNav">
+        <div class="navBarContainer">
+            <div>
+                <div>
+                    <a href="{{ url_for('home') }}">Address Book</a>
+                </div>
+            </div>
+            <div class="rightNavItems">
+                <div>
+                    <a href="{{ url_for('mass_email_page') }}">Mass Email</a>
+                </div>
+                <div>
+                    <a href="{{ url_for('form') }}">+New Contact</a>
+                </div>       
+                {% if current_user.is_authenticated %}
+                    <div>
+                        <a href="{{ url_for('logout') }}">Logout</a>
+                    </div>
+                {% else %}
+                    <div>
+                        <a href="{{ url_for('login_page') }}">Login</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
     <h1>INVOICE</h1>
     <div class="headerContainer">
         <div>
@@ -20,24 +48,24 @@
             <p>WWW.HEATHERRAETHEWOOGIRL.COM</p>
         </div>
         <div class="pictureContainer">
-            <img src="../static/img/invoiceHeather.webp" alt="picture of Heather Rae with her hands in the shape of a heart">
+            <img src="{{ url_for('static', filename='../static/img/invoiceHeather.webp') }}" alt="picture of Heather Rae with her hands in the shape of a heart">
         </div>
     </div>
     <div class="coloredContainer">
         <div>
-            <h2>Whitney Place Assisted Living And Memory Care</h2>
+            <h2>{{ invoice.facility }}</h2>
             <h3>Bill To</h3>
-            <p>Whitney Place Assisted Living and Memory Care</p>
-            <p>238 West Main Street</p>
-            <p>Northborough, Ma</p>
+            <p>{{ invoice.facility }}</p>
+            <p>{{ invoice.street }}</p>
+            <p>{{ invoice.town }}, {{ invoice.state }}</p>
         </div>
         <hr class="lineBreak">
         <div>
             <h3>Invoice Details</h3>
-            <p>Invoice no.: 1150</p>
+            <p>Invoice no.: {{ invoice.id }}</p>
             <p>Terms: Net 30</p>
-            <p>Invoice Date: 09/28/2023</p>
-            <p>Due Date: 10/28/2023</p>
+            <p>Invoice Date: {{ invoice.date }}</p>
+            <p>Due Date: {{ invoice.due_date }}</p>
         </div>
     </div>
     <div class="rowItems">
@@ -48,21 +76,19 @@
         <li>
             <hr class="lineBreak">
             <div class="rowItems">
-                <h3>Get Happy with Heather Rae</h3>
-                <h4>$150.00</h4>
+                <h3>{{ invoice.title }}</h3>
+                <h3>${{ invoice_price }}</h3>
             </div>
             <p class="descriptionWidth">
-                1 hour of singing entertainment 2:30pm - 3:30pm falsd fjlaj 
-                sfldjl aksjdfldjflk asj df lkjasdlkfjals kjdflkajsdfkljalskjdflk 
-                faljsdfjal alskjdfl adlkf jlaskdjf lj asdflkj salkdfj as lfdj asdlfk
+                {{ invoice.description }}
             </p>
             <hr class="lineBreak">
         </li>
     </ol>
     <div class="totalContainer">
         <div class="rowItems">
-            <h4>Total</h4>
-            <h3>$150.00</h3>
+            <h3>Total</h3>
+            <h4>${{ invoice_price }}</h4>
         </div>
         <hr class="lineBreak">
     </div>

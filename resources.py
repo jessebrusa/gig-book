@@ -6,7 +6,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 from flask import request
 from form import weekdays
-from datetime import datetime
+from datetime import datetime, timedelta
 import math
 import os
 
@@ -94,11 +94,27 @@ def format_date(date):
         return date_object.strftime('%m/%d/%Y')
 
 
+def date_add_days(date, add_days):
+    date = str(date)
+    date_format = '%m/%d/%Y'
+    date_object = datetime.strptime(date, date_format)
+
+    new_date = date_object + timedelta(days=add_days)
+
+    return new_date.strftime(date_format)
+
+
 def format_url_date(date):
     date = str(date)
     if '/' in date:
         date_object = datetime.strptime(date, '%m/%d/%Y')
         return date_object.strftime('%Y-%m-%d')
+
+
+def float_decimal_one(num):
+    fractional_part = num - int(num) 
+    return 0.0 <= fractional_part <= 0.9 \
+        or fractional_part == 0.0
 
 
 def set_list_form_submit(form):

@@ -7,6 +7,7 @@
 
 html, body {
     overflow-x: hidden;
+    font-family: 'Roboto', sans-serif;
 }
 
 .navBarContainer {
@@ -927,6 +928,52 @@ p {
     justify-content: center;
 }
 
+.invoiceBtn {
+    background-color: #B9B7BD;
+}
+
+.invoiceBtn a {
+    color: black;
+}
+
+.addTitle {
+    width: 200px;
+    margin-left: 130px;
+}
+
+.centerRow {
+    justify-content: center;
+}
+
+.hoverNav {
+    margin-bottom: -150px;
+    position: relative;
+    opacity: 0%;
+    transition: opacity 0.5s ease;
+}
+
+.hoverNav:hover {
+    opacity: 100%;
+    z-index: 500;
+}
+
+.tableContainer {
+    padding: 10px;
+    width: 95%;
+}
+
+.tableContent {
+    background-color: white;
+    font-size: 22px;
+    border: 1px solid black;
+}
+
+.lineBreak {
+    background-color: grey;
+    height: 2px;
+    width: 100%;
+}
+
 @media only screen and (max-width: 1200px) {
     .top-info {
         width: 85%;
@@ -1001,5 +1048,22 @@ p {
         margin: 0px;
     }
 
+    .inputField {
+        width: 150px;
+        margin-right: 200px;
+    }
 
+    .dateCalendar {
+        width: 150px;
+        margin-right: 200px;
+    }
+
+    .textArea {
+        width: 150px;
+        margin-right: 200px;
+    }
+
+    .addTitle {
+        margin-right: 150px;
+    }
   }

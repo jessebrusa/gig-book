@@ -1,0 +1,34 @@
+{% include "header.html" %}
+<body>  
+    <div class="libraryItemsContainer">
+        <div class="formContainerColumn tableContainer">
+            <h1>Past Invoices</h1>
+            <table class="tableContent">
+                <tr>
+                    <td>ID</td>
+                    <td>Name</td>
+                    <td>Address</td>
+                    <td>Price</td>
+                    <td>Date</td>
+                    <td>Due-Date</td>
+                    <td>Paid</td>
+                </tr>
+                {% for invoice in invoices %}
+                    <tr>
+                        <td>{{ invoice.id }}</td>
+                        <td>{{ invoice.facility }}</td>
+                        <td>
+                            {{ invoice.street }}, {{ invoice.town }}, 
+                            {{ invoice.state }} {{ invoice.zip_code }}
+                        </td>
+                        <td>${{ invoice.price }}</td>
+                        <td>{{ invoice.date }}</td>
+                        <td>{{ invoice.due_date }}</td>
+                        <td>{{ invoice.paid }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</body>
+</html>

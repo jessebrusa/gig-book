@@ -4,6 +4,7 @@ body {
     font-family: 'Roboto', sans-serif;
     margin-left: 20px;
     margin-right: 20px;
+    background-color: white;
 }
 
 h1 {
@@ -11,6 +12,7 @@ h1 {
     font-size: 50px;
     margin-top: 10px;
     margin-bottom: 5px;
+    text-align: left;
 }
 
 p {
@@ -27,14 +29,21 @@ h3 {
     margin: 0px;
 }
 
+.rowItems h4 {
+    opacity: 1;
+}
+
 .headerContainer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    z-index: 2;
 }
 
 .pictureContainer img {
     width: 150px;
+    z-index: 1;
+    transform: scaleX(-1);
 }
 
 .coloredContainer {
