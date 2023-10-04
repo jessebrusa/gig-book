@@ -6,6 +6,10 @@
     border: 2px solid red;
 } */
 
+html, body {
+    overflow-x: hidden;
+}
+
 .navBarContainer {
     width: 95%;
     margin: 10px;
@@ -471,7 +475,6 @@ h2 {
     border: solid 5px #B9B7BD;
     border-radius: 10px;
     margin: 10px;
-    /* margin-bottom: -20px; */
     margin-top: -15px;
 }
 
@@ -784,10 +787,12 @@ p {
 .indexContainer {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .indexLeftContainer {
-    width: 590px;
+    width: 530px;
     margin: 20px;
     border: 5px solid #B9B7BD;
     border-radius: 10px;
@@ -796,19 +801,19 @@ p {
 }
 
 .searchContainer {
-    min-width: 500px;
+    width: 500px;
     font-size: 40px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    margin: 50px;
     background-color: #E7D2CC;
     padding: 15px;
     border: 10px solid #B9B7BD;
     border-radius: 10px;
     height: 175px;
+    margin: 10px;
 }
 
 
@@ -917,6 +922,12 @@ p {
     color: black;
 }
 
+.centerNav {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
 @media only screen and (max-width: 1200px) {
     .top-info {
         width: 85%;
@@ -951,19 +962,45 @@ p {
     }
 
     .navBarContainer {
-        width: 80%;
+        transform: scale(.8);
+        gap: 10px;
+        width: 600px;
+        
     }
 
     .navBarContainer a {
         font-size: 20px;
+        text-align: center;
     }
 
     .row4Marketing {
         width: 85%;
     }
 
-
     .phoneVersion {
         margin-left: -50px;
     }
+
+    .searchContainer {
+        transform: scale(.65);
+        margin-right: auto;
+        margin-left: auto;
+        margin: 0px;
+    }
+
+    .libraryFacilityContainer {
+        transform: scale(.7);
+        margin: 0px;
+    }
+
+    .libraryFacilityContainer:hover {
+        transform: scale(.8);
+    }
+
+    .gigs {
+        transform: scale(.7);
+        margin: 0px;
+    }
+
+
   }

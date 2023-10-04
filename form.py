@@ -36,7 +36,7 @@ feedback_list_items = [('Volume Low'), ('Volume High'), ('Less Upbeat'),
                        ('Too Long')]
 
 marketing_list_items = [('Physical Flyer'), ('Electronic Flyer'), ('Physical Business Cards'),
-                        ('EPK'), ('Chocolate'), ('Video Clip')]
+                        ('EPK'), ('Chocolate'), ('Video Clip'), ('Post Card')]
 
 
 class AddressBookForm(FlaskForm):
@@ -91,6 +91,7 @@ class AddressBookForm(FlaskForm):
     marketing_list_epk = BooleanField('EPK')
     marketing_list_chocolate = BooleanField('Chocolate')
     marketing_list_video_clip = BooleanField('Video Clip')
+    marketing_list_post_card = BooleanField('Post Card')
 
     contact_person_edit = StringField('Contact Person Edit')
 

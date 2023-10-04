@@ -579,7 +579,7 @@ def facility_page(id):
                 materials = [item.material for item in facility_marketing if item.date == date]
                 market_date_list.append([materials, date])
                 date_list.append(date)
-        market_date_list = sorted(market_date_list, key=lambda x: date_key(x[1]))
+        # market_date_list = sorted(market_date_list, key=lambda x: date_key(x[1]))
     else:
         market_date_list = None
 
@@ -641,12 +641,13 @@ def commit_add_data(id, field):
             db.session.add(new_contact)
         
 
-        image_file_string_type = image_url(form.location_img_url.data, facility.facility)
-        if image_file_string_type:
-            image_file_string_type[0].save(os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                app.config['UPLOAD_FOLDER'],
-                                secure_filename(f'{image_file_string_type[1]}{image_file_string_type[2]}'))) 
-            facility.location_img_url = f'../static/location_img/{image_file_string_type[1]}{image_file_string_type[2]}'
+        if field == 'image':
+            image_file_string_type = image_url(form.location_img_url.data, facility.facility)
+            if image_file_string_type:
+                image_file_string_type[0].save(os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                    app.config['UPLOAD_FOLDER'],
+                                    secure_filename(f'{image_file_string_type[1]}{image_file_string_type[2]}'))) 
+                facility.location_img_url = f'../static/location_img/{image_file_string_type[1]}{image_file_string_type[2]}'
 
 
         if field == 'phone_number':
@@ -948,6 +949,40 @@ def commit_edit(id, field):
             facility.town = edit_address[1]
             facility.state = edit_address[2]
             facility.zip_code = edit_address[3]
+
+            destination_address = f'{edit_address[0]}, {edit_address[1]}, {edit_address[2]}, {edit_address[3]}'
+            maps_url = f'https://maps.googleapis.com/maps/api/directions/json?origin={ORIGIN}&destination={destination_address}&key={MAPS_DIRECTIONS_API_KEY}'
+
+            response = requests.get(maps_url)
+            data = response.json()
+
+            if data['status'] == 'OK':
+                duration_text = data['routes'][0]['legs'][0]['duration']['text']
+                distance_text = data['routes'][0]['legs'][0]['distance']['text']
+                parts = duration_text.split(' ')
+                travel_hours, travel_minutes = 0, 0  
+                for i in range(len(parts)):
+                    if parts[i] == 'hour' or parts[i] == 'hours':
+                        travel_hours = int(parts[i - 1])
+                        if travel_hours == 0:
+                            travel_hours = None
+                    elif parts[i] == 'min' or parts[i] == 'mins':
+                        travel_minutes = int(parts[i - 1])
+                        if travel_minutes == 0:
+                            travel_minutes = None
+                distance_numeric = re.search(r'\d+', distance_text)
+    
+                if distance_numeric:
+                    distance_numeric = int(distance_numeric.group())
+                else:
+                    distance_numeric = None 
+
+                if travel_hours:
+                    facility.distance_hour = travel_hours
+                if travel_minutes:
+                    facility.distance_min = travel_minutes
+                if distance_numeric:
+                    facility.mileage = distance_numeric
 
 
         if field == 'phone_number':
@@ -1359,4 +1394,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(port=5001, debug=True)
+    app.run(port=5001, debug=True, host="0.0.0.0")

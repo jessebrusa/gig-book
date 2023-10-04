@@ -580,7 +580,18 @@
                                         {{ form.marketing_list_video_clip(class_='booleanField') }}
                                     </div>
                                 {% endif %}
-                            </div>
+                                {% if "Post Card" in market_date[0] %}
+                                    <div class="setListColumn">
+                                        <label><u>Post Card</u></label>
+                                        {{ form.marketing_list_post_card(class_='booleanField', checked=True) }}
+                                    </div>
+                                {% else %}
+                                    <div class="setListColumn">
+                                        <label><u>Post Card</u></label>
+                                        {{ form.marketing_list_post_card(class_='booleanField') }}
+                                    </div>
+                                {% endif %}
+                            </div> 
                         </div>
                         <div class="formRow">
                             {% if market_date[2] %}

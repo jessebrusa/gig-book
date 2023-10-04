@@ -153,6 +153,8 @@ def marketing_form_submit(form):
         marketing_list.append('Chocolate')
     if form.marketing_list_video_clip.data:
         marketing_list.append('Video Clip')
+    if form.marketing_list_post_card.data:
+        marketing_list.append('Post Card')
 
     return [marketing_list, date]
 
