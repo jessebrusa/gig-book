@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap');
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+h1 {
+    color: rgb(78, 0, 46);
+    font-size: 50px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+p {
+    font-size: 12px;
+}
+
+h2 {
+    color: rgb(78, 0, 46);
+    font-size: 25px;
+}
+
+h3 {
+    font-size: 22px;
+    margin: 0px;
+}
+
+.headerContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pictureContainer img {
+    width: 150px;
+}
+
+.coloredContainer {
+    background-color: rgb(249, 224, 228);
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.lineBreak {
+    background-color: grey;
+    height: 2px;
+}
+
+.productAmount {
+    color: grey;
+    font-size: 14px;
+}
+
+.productService {
+    margin-left: 40px;
+}
+
+.rowItems {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.descriptionWidth {
+    width: 35%;
+}
+
+.totalContainer {
+    width: 25%;
+    margin-left: auto;
+}
+
+@media print {
+    .coloredContainer {
+        background-color: rgb(249, 224, 228);
+    }
+}
