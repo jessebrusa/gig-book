@@ -194,6 +194,38 @@ class InvoiceTable(db.Model):
     data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
     
 
+class PerformanceTitle(db.Model):
+    __tablename__ = 'performance_title'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(250), nullable=False)
+
+
+class SubscriptionTable(db.Model):
+    __tablename__ = 'subscription_table'
+    id = db.Column(db.Integer, primary_key=True)
+    service = db.Column(db.String(250))
+    date = db.Column(db.String(250))
+    price = db.Column(db.Float)
+    rate = db.Column(db.Integer)
+    charged_date = db.Column(db.String(250))
+
+
+class ExpenseTable(db.Model):
+    __tablename__ = 'expense_table'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250))
+    price = db.Column(db.Float)
+    date = db.Column(db.String(250))
+
+
+class ProfitTable(db.Model):
+    __tablename__ = 'profit_table'
+    id = db.Column(db.String(250), primary_key=True)
+    name = db.Column(db.String(250))
+    price = db.Column(db.Float)
+    date = db.Column(db.String(250))
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -201,12 +233,6 @@ class User(UserMixin, db.Model):
     l_name = db.Column(db.String(250), nullable=False)
     email = db.Column(db.String(250), nullable=False)
     password = db.Column(db.String(250), nullable=False)
-
-
-class PerformanceTitle(db.Model):
-    __tablename__ = 'performance_title'
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(250), nullable=False)
 
 
 with app.app_context():
@@ -1566,6 +1592,12 @@ def invoice_list():
     return render_template('invoice-list.html', paid_invoices=paid_invoices, current_invoices=current_invoices,
                            overdue_invoices=overdue_invoices, paid_total=paid_total, overdue_total=overdue_total,
                            current_total=current_total)
+
+
+@app.route('/profit-expenses', methods=['GET', 'POST'])
+# @logged_in_only
+def profit_expenses():
+    return render_template('profit-expenses.html')
 
 
 @app.route('/logout')
