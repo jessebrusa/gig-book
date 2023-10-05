@@ -111,10 +111,17 @@ def format_url_date(date):
         return date_object.strftime('%Y-%m-%d')
 
 
-def float_decimal_one(num):
-    fractional_part = num - int(num) 
-    return 0.0 <= fractional_part <= 0.9 \
-        or fractional_part == 0.0
+def format_float_as_string(num):
+    formatted_str = '{:.2f}'.format(num)
+    integer_part, fractional_part = formatted_str.split('.')
+
+    if len(fractional_part) == 1:
+        return f"{integer_part}.{fractional_part}0"
+ 
+        return f"{integer_part}.00"
+
+    else:
+        return formatted_str
 
 
 def set_list_form_submit(form):

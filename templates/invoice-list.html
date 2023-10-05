@@ -1,33 +1,108 @@
 {% include "header.html" %}
 <body>  
-    <div class="libraryItemsContainer">
+    <div class="libraryItemsContainer tableItemsBtn">
         <div class="formContainerColumn tableContainer">
-            <h1>Past Invoices</h1>
-            <table class="tableContent">
-                <tr>
-                    <td>ID</td>
-                    <td>Name</td>
-                    <td>Address</td>
-                    <td>Price</td>
-                    <td>Date</td>
-                    <td>Due-Date</td>
-                    <td>Paid</td>
-                </tr>
-                {% for invoice in invoices %}
+            <h1>Invoices</h1>
+            {% if overdue_invoices[0] %}
+                <h2>Over-Due Invoices | Total ${{ overdue_total }}</h2>
+                <div class="tableBtnContainer">
+                    <table class="tableContent">
+                        <tr>
+                            <td>ID</td>
+                            <td>Name</td>
+                            <td>Address</td>
+                            <td>Price</td>
+                            <td>Date</td>
+                            <td>Due-Date</td>
+                            <td>Paid</td>
+                            <td>View</td>
+                            <td>DELETE</td>
+                        </tr>
+                        {% for invoice in overdue_invoices %}
+                            <tr data-href="{{ url_for('invoice', invoice_id=invoice.id) }}">
+                                <td>{{ invoice.id }}</td>
+                                <td>{{ invoice.facility }}</td>
+                                <td>
+                                    {{ invoice.street }}, {{ invoice.town }}, 
+                                    {{ invoice.state }} {{ invoice.zip_code }}
+                                </td>
+                                <td>${{ invoice.price }}</td>
+                                <td>{{ invoice.date }}</td>
+                                <td>{{ invoice.due_date }}</td>
+                                <td><a class="editBtn widthBtn" href="{{ url_for('commit_edit', id=invoice.id, field='paid') }}">Paid</a></td>
+                                <td><a class="editBtn greyBtn widthBtn" href="{{ url_for('invoice', invoice_id=invoice.id) }}">View</a></td>
+                                <td><a class="delete widthBtn" href="{{ url_for('confirm_page', id=invoice.id, field='invoice') }}">DELETE</a></td>  
+                            </tr>
+                        {% endfor %}
+                    </table>           
+                </div>
+            {% endif %}  
+            {% if current_invoices[0] %} 
+                <h2>Current Invoices | Total ${{ current_total }}</h2>
+                <div class="tableBtnContainer">
+                    <table class="tableContent">
+                        <tr>
+                            <td>ID</td>
+                            <td>Name</td>
+                            <td>Address</td>
+                            <td>Price</td>
+                            <td>Date</td>
+                            <td>Due-Date</td>
+                            <td>Paid</td>
+                            <td>View</td>
+                            <td>DELETE</td>
+                        </tr>
+                        {% for invoice in current_invoices %}
+                            <tr data-href="{{ url_for('invoice', invoice_id=invoice.id) }}">
+                                <td>{{ invoice.id }}</td>
+                                <td>{{ invoice.facility }}</td>
+                                <td>
+                                    {{ invoice.street }}, {{ invoice.town }}, 
+                                    {{ invoice.state }} {{ invoice.zip_code }}
+                                </td>
+                                <td>${{ invoice.price }}</td>
+                                <td>{{ invoice.date }}</td>
+                                <td>{{ invoice.due_date }}</td>
+                                <td><a class="editBtn" href="{{ url_for('commit_edit', id=invoice.id, field='paid') }}">Paid</a></td>
+                                <td><a class="editBtn greyBtn" href="{{ url_for('invoice', invoice_id=invoice.id) }}">View</a></td>
+                                <td><a class="delete" href="{{ url_for('confirm_page', id=invoice.id, field='invoice') }}">DELETE</a></td>   
+                            </tr>
+                        {% endfor %}
+                    </table>              
+                </div>
+            {% endif %}
+            <h2>Paid Invoices | Total ${{ paid_total }}</h2>
+            <div class="tableBtnContainer">
+                <table class="tableContent">
                     <tr>
-                        <td>{{ invoice.id }}</td>
-                        <td>{{ invoice.facility }}</td>
-                        <td>
-                            {{ invoice.street }}, {{ invoice.town }}, 
-                            {{ invoice.state }} {{ invoice.zip_code }}
-                        </td>
-                        <td>${{ invoice.price }}</td>
-                        <td>{{ invoice.date }}</td>
-                        <td>{{ invoice.due_date }}</td>
-                        <td>{{ invoice.paid }}</td>
+                        <td>ID</td>
+                        <td>Name</td>
+                        <td>Address</td>
+                        <td>Price</td>
+                        <td>Date</td>
+                        <td>Due-Date</td>
+                        <td>Paid-On</td>
+                        <td>View</td>
+                        <td>DELETE</td>
                     </tr>
-                {% endfor %}
-            </table>
+                    {% for invoice in paid_invoices %}
+                        <tr data-href="{{ url_for('invoice', invoice_id=invoice.id) }}">
+                            <td>{{ invoice.id }}</td>
+                            <td>{{ invoice.facility }}</td>
+                            <td>
+                                {{ invoice.street }}, {{ invoice.town }}, 
+                                {{ invoice.state }} {{ invoice.zip_code }}
+                            </td>
+                            <td>${{ invoice.price }}</td>
+                            <td>{{ invoice.date }}</td>
+                            <td>{{ invoice.due_date }}</td>
+                            <td>{{ invoice.paid_on }}</td>
+                            <td><a class="editBtn greyBtn" href="{{ url_for('invoice', invoice_id=invoice.id) }}">View</a></td>
+                            <td><a class="delete" href="{{ url_for('confirm_page', id=invoice.id, field='invoice') }}">DELETE</a></td>  
+                        </tr>
+                    {% endfor %}
+                </table>              
+            </div>
         </div>
     </div>
 </body>

@@ -3,13 +3,22 @@
 
 <body>
     <h1 class="gigs editGigs">Delete Contact</h1>
-        <div class="formContainerColumn">
-           <h2>Are You Sure You Want To Delete:</h2>
-           <h2>{{ facility_name }}</h2>
-           <div class="formRow">
+    <div class="formContainerColumn centerContainer scaleFifty">
+        <h2>Are You Sure You Want To Delete:</h2>
+        {% if facility %}
+            <h2>{{ facility.facility }}</h2>
+            <div class="formRow">
                 <a href="{{ url_for('delete_contact', id=id) }}" class="delete">Yes</a>
                 <a href="{{ url_for('facility_page', id=id) }}" class="delete noDelete">No</a>
             </div>
-        </div> 
+        {% elif invoice %}
+            <h2>{{ invoice.facility }}</h2>
+            <h3 class="invoiceText">{{ invoice.date }} | ${{ invoice.price }}</h3>
+            <div class="formRow">
+                <a href="{{ url_for('delete_data', id=1, field='invoice', data=invoice.id) }}" class="delete">Yes</a>
+                <a href="{{ url_for('facility_page', id=id) }}" class="delete noDelete">No</a>
+            </div>
+        {% endif %}
+    </div> 
 </body>
 </html>

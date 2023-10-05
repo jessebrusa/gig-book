@@ -18,6 +18,9 @@
             </div>
             <div class="rightNavItems">
                 <div>
+                    <a href="{{ url_for('invoice_list') }}">Invoices</a>
+                </div>
+                <div>
                     <a href="{{ url_for('mass_email_page') }}">Mass Email</a>
                 </div>
                 <div>
@@ -77,7 +80,7 @@
             <hr class="lineBreak">
             <div class="rowItems">
                 <h3>{{ invoice.title }}</h3>
-                <h3>${{ invoice_price }}</h3>
+                <h3>${{ invoice.price }}</h3>
             </div>
             <p class="descriptionWidth">
                 {{ invoice.description }}
@@ -88,7 +91,7 @@
     <div class="totalContainer">
         <div class="rowItems">
             <h3>Total</h3>
-            <h4>${{ invoice_price }}</h4>
+            <h4>${{ invoice.price }}</h4>
         </div>
         <hr class="lineBreak">
     </div>

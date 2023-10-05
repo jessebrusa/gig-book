@@ -8,14 +8,14 @@ format_url_date, compare_field_return_data, compare_field_address, edit_data_met
 date_key, edit_mass_email_method, set_list_form_submit, generate_hash_salt, bible_url, params, \
 send_email_with_attachment, attachment_url, check_for_data_return_last, return_list, edit_database, \
 format_time, edit_two_database, return_table_list, format_date, marketing_form_submit, \
-remove_unwanted_char_phone, MAPS_DIRECTIONS_API_KEY, ORIGIN, date_add_days, float_decimal_one
+remove_unwanted_char_phone, MAPS_DIRECTIONS_API_KEY, ORIGIN, date_add_days, format_float_as_string
 from werkzeug.security import check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from functools import wraps
 from werkzeug.utils import secure_filename
 import requests
-import pdfkit
+from datetime import datetime
 import os
 import re
 
@@ -23,7 +23,6 @@ import re
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'das;jklfaowye83oi;jkasdofiu8ow11'
 app.config['UPLOAD_FOLDER'] = './static/location_img'
-app.config['PDFKIT_EXECUTABLE'] = '/usr/local/bin/wkhtmltopdf' 
 ckeditor = CKEditor(app)
 Bootstrap(app)
 
@@ -186,10 +185,11 @@ class InvoiceTable(db.Model):
     zip_code = db.Column(db.String(250))
     date = db.Column(db.String(250))
     due_date = db.Column(db.String(250))
-    price = db.Column(db.Float)
+    price = db.Column(db.String(250))
     title = db.Column(db.String(250))
     description = db.Column(db.String(250))
     paid = db.Column(db.Boolean, default=False)
+    paid_on = db.Column(db.String(250))
 
     data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
     
@@ -607,7 +607,6 @@ def facility_page(id):
                 materials = [item.material for item in facility_marketing if item.date == date]
                 market_date_list.append([materials, date])
                 date_list.append(date)
-        # market_date_list = sorted(market_date_list, key=lambda x: date_key(x[1]))
     else:
         market_date_list = None
 
@@ -935,7 +934,7 @@ def edit_field(id, field):
                            testimonials=testimonials)
 
 
-@app.route('/commit-edit/<int:id>/<field>', methods=['GET', 'POST'])
+@app.route('/commit-edit/<int:id>/<string:field>', methods=['GET', 'POST'])
 # @logged_in_only
 def commit_edit(id, field):
     facility = DataBase.query.filter_by(id=id).first()
@@ -1078,6 +1077,19 @@ def commit_edit(id, field):
 
 
         db.session.commit()
+    
+    if 'paid' == field:
+        pay_invoice = InvoiceTable.query.filter_by(id=id).first()
+        pay_invoice.paid = True
+
+        today = datetime.today()
+        today = today.strftime('%m/%d/%Y')
+        pay_invoice.paid_on = today
+
+        db.session.commit()
+        return redirect(url_for('invoice_list'))
+    
+
     return redirect(url_for('facility_page', id=id))
 
 
@@ -1309,14 +1321,33 @@ def delete_data(id, field, data):
         db.session.commit()
         return redirect(url_for('add_title', id=id))
 
+
+    if field == 'invoice':
+        print(data)
+        delete_invoice = InvoiceTable.query.filter_by(id=data).first()
+        db.session.delete(delete_invoice)
+        db.session.commit()
+        return redirect(url_for('invoice_list'))
+
+
     db.session.commit()
     return redirect (url_for('edit_field', id=id, field=field))
 
 
-@app.route('/delete-confirm/<int:id>', methods=['GET', 'POST'])
-def confirm_page(id):
-    facility = DataBase.query.filter_by(id=id).first()
-    return render_template('confirm.html', facility_name=facility.facility, id=id)
+@app.route('/delete-confirm/<int:id>/<string:field>', methods=['GET', 'POST'])
+def confirm_page(id, field):
+    if field == 'facility':
+        facility = DataBase.query.filter_by(id=id).first()
+    else: 
+        facility = None
+
+    if field == 'invoice':
+        invoice = InvoiceTable.query.filter_by(id=id).first()
+    else:
+        invoice = None
+
+
+    return render_template('confirm.html', facility=facility, id=id, invoice=invoice)
 
 @app.route('/delete-contact/<int:id>', methods=['GET', 'POST'])
 # @logged_in_only
@@ -1437,6 +1468,8 @@ def invoice_form(id):
         form_price = form.price.data
         form_description = form.description.data
 
+        form_price = format_float_as_string(form_price)
+
         new_invoice = InvoiceTable (
             facility = facility.facility,
             street = facility.street,
@@ -1487,21 +1520,53 @@ def add_title(id):
 # @logged_in_only
 def invoice(invoice_id):
     invoice = InvoiceTable.query.filter_by(id=invoice_id).first()
-    invoice_price = invoice.price
-    price_end_with_zero = float_decimal_one(invoice.price)
-    if price_end_with_zero:
-        invoice_price = str(invoice_price) + '0'
+
+    return render_template('invoice.html', invoice=invoice)
 
 
-    return render_template('invoice.html', invoice=invoice, invoice_price=invoice_price)
-
-
-@app.route('/invoice-list')
+@app.route('/invoice-list', methods=['GET', 'POST'])
 # @logged_in_only
 def invoice_list():
     invoices = InvoiceTable.query.all()
+    sorted_invoices = sorted(invoices, key=lambda x: x.date)
+    today = datetime.now().replace(hour=23, minute=59, second=59)
 
-    return render_template('invoice-list.html', invoices=invoices)
+    unpaid_invoices = []
+    paid_invoices = []
+    paid_total = 0
+    for invoice in sorted_invoices:
+        if invoice.paid:
+            paid_invoices.append(invoice)
+            paid = float(invoice.price)
+            paid_total += paid
+        else:
+            unpaid_invoices.append(invoice)
+
+    paid_invoices = sorted(paid_invoices, key=lambda x: x.date, reverse=True)
+
+    overdue_invoices = []
+    overdue_total = 0
+    current_invoices = []
+    current_total = 0
+    for invoice in unpaid_invoices:
+        due_date = datetime.strptime(invoice.due_date, '%m/%d/%Y')
+        if due_date < today:
+            overdue_invoices.append(invoice)
+            overdue = float(invoice.price)
+            overdue_total += overdue
+        else:
+            current_invoices.append(invoice)
+            current = float(invoice.price)
+            current_total += current
+
+    paid_total = format_float_as_string(paid_total)
+    overdue_total = format_float_as_string(overdue_total)
+    current_total = format_float_as_string(current_total)
+
+    return render_template('invoice-list.html', paid_invoices=paid_invoices, current_invoices=current_invoices,
+                           overdue_invoices=overdue_invoices, paid_total=paid_total, overdue_total=overdue_total,
+                           current_total=current_total)
+
 
 @app.route('/logout')
 def logout():
