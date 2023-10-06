@@ -16,6 +16,7 @@ from functools import wraps
 from werkzeug.utils import secure_filename
 import requests
 from datetime import datetime
+from collections import OrderedDict
 import os
 import re
 
@@ -1556,6 +1557,7 @@ def invoice_list():
     invoices = InvoiceTable.query.all()
     sorted_invoices = sorted(invoices, key=lambda x: x.date)
     today = datetime.now().replace(hour=23, minute=59, second=59)
+    current_year = today.year
 
     unpaid_invoices = []
     paid_invoices = []
@@ -1570,13 +1572,45 @@ def invoice_list():
 
     paid_invoices = sorted(paid_invoices, key=lambda x: x.date, reverse=True)
 
+    this_year_paid_invoices = []
+    paid_invoices_by_year = {}
+    yearly_totals = {} 
+
+    for invoice in paid_invoices:
+        invoice_date = datetime.strptime(invoice.date, "%m/%d/%Y")
+        invoice_year = invoice_date.year
+        
+        if invoice_year < current_year:
+            if invoice_year not in paid_invoices_by_year:
+                paid_invoices_by_year[invoice_year] = []
+            paid_invoices_by_year[invoice_year].append(invoice)
+        else:
+            this_year_paid_invoices.append(invoice)
+
+    for year, invoices in paid_invoices_by_year.items():
+        total = sum(float(invoice.price) for invoice in invoices)
+        yearly_totals[year] = format_float_as_string(total)
+
+    for year, total in yearly_totals.items():
+        yearly_totals[year] = format_float_as_string(float(total))
+
+    paid_invoices_by_year = OrderedDict(sorted(paid_invoices_by_year.items(), key=lambda x: x[0], reverse=True))
+
+
+    future_invoices = []
+    future_total = 0
     overdue_invoices = []
     overdue_total = 0
     current_invoices = []
     current_total = 0
     for invoice in unpaid_invoices:
         due_date = datetime.strptime(invoice.due_date, '%m/%d/%Y')
-        if due_date < today:
+        start_date = datetime.strptime(invoice.date, '%m/%d/%Y')
+        if start_date > today:
+            future_invoices.append(invoice)
+            future = float(invoice.price)
+            future_total += future
+        elif due_date < today:
             overdue_invoices.append(invoice)
             overdue = float(invoice.price)
             overdue_total += overdue
@@ -1586,12 +1620,15 @@ def invoice_list():
             current_total += current
 
     paid_total = format_float_as_string(paid_total)
+    future_total = format_float_as_string(future_total)
     overdue_total = format_float_as_string(overdue_total)
     current_total = format_float_as_string(current_total)
 
-    return render_template('invoice-list.html', paid_invoices=paid_invoices, current_invoices=current_invoices,
-                           overdue_invoices=overdue_invoices, paid_total=paid_total, overdue_total=overdue_total,
-                           current_total=current_total)
+    return render_template('invoice-list.html', this_year_paid_invoices=this_year_paid_invoices, 
+                           current_invoices=current_invoices, overdue_invoices=overdue_invoices, 
+                           paid_total=paid_total, overdue_total=overdue_total,current_total=current_total, 
+                           future_invoices=future_invoices, future_total=future_total, 
+                           paid_invoices_by_year=paid_invoices_by_year, yearly_totals=yearly_totals)
 
 
 @app.route('/profit-expenses', methods=['GET', 'POST'])

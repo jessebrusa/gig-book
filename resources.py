@@ -118,10 +118,7 @@ def format_float_as_string(num):
     if len(fractional_part) == 1:
         return f"{integer_part}.{fractional_part}0"
  
-        return f"{integer_part}.00"
-
-    else:
-        return formatted_str
+    return formatted_str
 
 
 def set_list_form_submit(form):

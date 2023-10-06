@@ -71,6 +71,40 @@
                     </table>              
                 </div>
             {% endif %}
+            {% if future_invoices[0] %}
+                <h2>Future Invoices | Total ${{ future_total }}</h2>
+                <div class="tableBtnContainer">
+                    <table class="tableContent">
+                        <tr>
+                            <td>ID</td>
+                            <td>Name</td>
+                            <td>Address</td>
+                            <td>Price</td>
+                            <td>Date</td>
+                            <td>Due-Date</td>
+                            <td>Paid</td>
+                            <td>View</td>
+                            <td>DELETE</td>
+                        </tr>
+                        {% for invoice in future_invoices %}
+                            <tr data-href="{{ url_for('invoice', invoice_id=invoice.id) }}">
+                                <td>{{ invoice.id }}</td>
+                                <td>{{ invoice.facility }}</td>
+                                <td>
+                                    {{ invoice.street }}, {{ invoice.town }}, 
+                                    {{ invoice.state }} {{ invoice.zip_code }}
+                                </td>
+                                <td>${{ invoice.price }}</td>
+                                <td>{{ invoice.date }}</td>
+                                <td>{{ invoice.due_date }}</td>
+                                <td><a class="editBtn widthBtn" href="{{ url_for('commit_edit', id=invoice.id, field='paid') }}">Paid</a></td>
+                                <td><a class="editBtn greyBtn widthBtn" href="{{ url_for('invoice', invoice_id=invoice.id) }}">View</a></td>
+                                <td><a class="delete widthBtn" href="{{ url_for('confirm_page', id=invoice.id, field='invoice') }}">DELETE</a></td>  
+                            </tr>
+                        {% endfor %}
+                    </table>           
+                </div>
+            {% endif %} 
             <h2>Paid Invoices | Total ${{ paid_total }}</h2>
             <div class="tableBtnContainer">
                 <table class="tableContent">
@@ -85,7 +119,7 @@
                         <td>View</td>
                         <td>DELETE</td>
                     </tr>
-                    {% for invoice in paid_invoices %}
+                    {% for invoice in this_year_paid_invoices %}
                         <tr data-href="{{ url_for('invoice', invoice_id=invoice.id) }}">
                             <td>{{ invoice.id }}</td>
                             <td>{{ invoice.facility }}</td>
@@ -103,6 +137,42 @@
                     {% endfor %}
                 </table>              
             </div>
+            {% if paid_invoices_by_year %}
+                {% for year, invoices in paid_invoices_by_year.items() %}
+                    <h2>{{ year }} Invoices | Total ${{ yearly_totals.get(year, 'N/A') }}</h2>
+                    <div class="tableBtnContainer">
+                        <table class="tableContent">
+                            <tr>
+                                <td>ID</td>
+                                <td>Name</td>
+                                <td>Address</td>
+                                <td>Price</td>
+                                <td>Date</td>
+                                <td>Due-Date</td>
+                                <td>Paid-On</td>
+                                <td>View</td>
+                                <td>DELETE</td>
+                            </tr>
+                            {% for invoice in invoices %}
+                                <tr data-href="{{ url_for('invoice', invoice_id=invoice.id) }}">
+                                    <td>{{ invoice.id }}</td>
+                                    <td>{{ invoice.facility }}</td>
+                                    <td>
+                                        {{ invoice.street }}, {{ invoice.town }}, 
+                                        {{ invoice.state }} {{ invoice.zip_code }}
+                                    </td>
+                                    <td>${{ invoice.price }}</td>
+                                    <td>{{ invoice.date }}</td>
+                                    <td>{{ invoice.due_date }}</td>
+                                    <td>{{ invoice.paid_on }}</td>
+                                    <td><a class="editBtn greyBtn" href="{{ url_for('invoice', invoice_id=invoice.id) }}">View</a></td>
+                                    <td><a class="delete" href="{{ url_for('confirm_page', id=invoice.id, field='invoice') }}">DELETE</a></td>  
+                                </tr>
+                            {% endfor %}
+                        </table>              
+                    </div>
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 </body>
