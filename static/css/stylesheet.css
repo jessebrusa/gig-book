@@ -1015,6 +1015,92 @@ p {
 .invoiceText {
     text-align: center;
 }
+
+.pneContainer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.sidePNEBtn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    width: 15%;
+    height: 550px;
+    border: 3px solid #868B8E;
+    border-radius: 10px;
+    background-color: #E7D2CC;
+    padding: 10px;
+}
+
+.sideBtn {
+    width: 80%;
+}
+
+.greenBtn {
+    background-color: rgb(101, 239, 101);
+    color: black;
+}
+
+.redBtn {
+    background-color: darkred;
+    color: white;
+}
+
+.middlePNEBtn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.middlePNEBtnTop {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.pneColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.middlePNEBtnBottom {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #E7D2CC;
+    border: 3px solid #868B8E;
+    border-radius: 10px;
+    min-width: 100%;
+    height: 100px;
+}
+
+.lineBreakTotal {
+    background-color: grey;
+    height: 2px;
+    min-width: 100%;
+}
+
+.scaleDown {
+    transform: scale(.9);
+}
+
+.scaleDown:hover {
+    transform: scale(1.05)
+}
+
+.barGraph {
+    width: 500px;
+    height: auto;
+}
+
 @media only screen and (max-width: 1200px) {
     .top-info {
         width: 85%;

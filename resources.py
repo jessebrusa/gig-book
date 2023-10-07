@@ -409,6 +409,144 @@ def attachment_url(form):
         pass
 
 
+def invoices_by_year_total(table, ordered_dict):
+    invoices = table.query.all()
+    sorted_invoices = sorted(invoices, key=lambda x: x.date)
+    today = datetime.now().replace(hour=23, minute=59, second=59)
+    current_year = today.year
+
+    this_year_paid_invoices = []
+    paid_invoices_by_year = {}
+    yearly_totals = {}
+    monthly_totals = {}  # Dictionary to store monthly totals
+
+    unpaid_invoices = []
+    paid_invoices = []
+    this_year_paid_invoices = []
+    this_year_paid_total = 0
+    for invoice in sorted_invoices:
+        if invoice.paid:
+            paid_invoices.append(invoice)
+        else:
+            unpaid_invoices.append(invoice)
+
+    paid_invoices = sorted(paid_invoices, key=lambda x: x.date, reverse=True)
+
+    for invoice in paid_invoices:
+        invoice_date = datetime.strptime(invoice.date, "%m/%d/%Y")
+        invoice_year = invoice_date.year
+        invoice_month = invoice_date.month
+
+        if invoice_year == current_year:
+            this_year_paid_invoices.append(invoice)
+            this_year_paid_total += float(invoice.price)
+ 
+            if invoice_month not in monthly_totals:
+                monthly_totals[invoice_month] = 0
+            monthly_totals[invoice_month] += float(invoice.price)
+        elif invoice_year < current_year:
+            if invoice_year not in paid_invoices_by_year:
+                paid_invoices_by_year[invoice_year] = []
+            paid_invoices_by_year[invoice_year].append(invoice)
+        else:
+            this_year_paid_invoices.append(invoice)
+
+    for year, invoices in paid_invoices_by_year.items():
+        total = sum(float(invoice.price) for invoice in invoices)
+        yearly_totals[year] = format_float_as_string(total)
+
+    for year, total in yearly_totals.items():
+        yearly_totals[year] = format_float_as_string(float(total))
+
+    paid_invoices_by_year = ordered_dict(sorted(paid_invoices_by_year.items(), key=lambda x: x[0], reverse=True))
+
+    future_invoices = []
+    future_total = 0
+    overdue_invoices = []
+    overdue_total = 0
+    current_invoices = []
+    current_total = 0
+    for invoice in unpaid_invoices:
+        due_date = datetime.strptime(invoice.due_date, '%m/%d/%Y')
+        start_date = datetime.strptime(invoice.date, '%m/%d/%Y')
+        if start_date > today:
+            future_invoices.append(invoice)
+            future = float(invoice.price)
+            future_total += future
+        elif due_date < today:
+            overdue_invoices.append(invoice)
+            overdue = float(invoice.price)
+            overdue_total += overdue
+        else:
+            current_invoices.append(invoice)
+            current = float(invoice.price)
+            current_total += current
+
+    if this_year_paid_total:
+        this_year_paid_total = format_float_as_string(this_year_paid_total)
+    if future_total:
+        future_total = format_float_as_string(future_total)
+    if overdue_total:
+        overdue_total = format_float_as_string(overdue_total)
+    if current_total:
+        current_total = format_float_as_string(current_total)
+
+    return [this_year_paid_invoices, current_invoices, overdue_invoices,
+            future_invoices, this_year_paid_total, current_total, overdue_total,
+            future_total, paid_invoices_by_year, yearly_totals, monthly_totals]
+
+
+
+def pne_data(table):
+    profits = table.query.all()
+    sorted_profits = sorted(profits, key=lambda x: x.date)
+    today = datetime.now().replace(hour=23, minute=59, second=59)
+    current_year = today.year
+    profits_by_year = {}
+    yearly_totals = {} 
+    future_profits = []
+    current_profits = []
+    current_profit_total = 0
+    monthly_totals = {}
+
+    for profit in sorted_profits:
+        profit_date = datetime.strptime(profit.date, '%m/%d/%Y')
+        profit_year = profit_date.year
+        profit_month = profit_date.month
+
+        if profit_date > today:
+            future_profits.append(profit)
+        elif profit_year == current_year:
+            current_profits.append(profit)
+            if profit_month not in monthly_totals:
+                monthly_totals[profit_month] = 0
+            monthly_totals[profit_month] += float(profit.amount)
+        elif profit_year < current_year:
+            if profit_year not in profits_by_year:
+                profits_by_year[profit_year] = []
+            profits_by_year[profit_year].append(profit)
+    for profit in current_profits:
+        current_profit_total += float(profit.amount)
+
+    for year, profits in profits_by_year.items():
+        total = sum(float(profit.amount) for profit in profits)
+        yearly_totals[year] = format_float_as_string(total)
+
+    for year, total in yearly_totals.items():
+        yearly_totals[year] = format_float_as_string(float(total))
+
+
+    for month, profits in profits_by_year.items():
+        total = sum(float(profit.amount) for profit in profits)
+        monthly_totals[month] = format_float_as_string(total)
+
+    for month, total in monthly_totals.items():
+        monthly_totals[month] = format_float_as_string(float(total))
+
+    return [current_profits, current_profit_total, 
+            profits_by_year, yearly_totals, monthly_totals]
+
+
 bible_url = 'http://labs.bible.org/api/?'
 
 params = {

@@ -2,13 +2,14 @@ from flask import Flask, render_template, redirect, url_for, request, make_respo
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from form import AddressBookForm, weekdays, venue_type_list, performance_type_list, \
-feedback_list_items, LoginForm, MassEmailForm, InvoiceForm, AddTitleForm
+feedback_list_items, LoginForm, MassEmailForm, InvoiceForm, AddTitleForm, AddProfitForm
 from resources import ext_phone, phone_to_string, format_duration, compare_field, last_item, image_url, \
 format_url_date, compare_field_return_data, compare_field_address, edit_data_method,  edit_address_method, \
 date_key, edit_mass_email_method, set_list_form_submit, generate_hash_salt, bible_url, params, \
 send_email_with_attachment, attachment_url, check_for_data_return_last, return_list, edit_database, \
 format_time, edit_two_database, return_table_list, format_date, marketing_form_submit, \
-remove_unwanted_char_phone, MAPS_DIRECTIONS_API_KEY, ORIGIN, date_add_days, format_float_as_string
+remove_unwanted_char_phone, MAPS_DIRECTIONS_API_KEY, ORIGIN, date_add_days, format_float_as_string, \
+invoices_by_year_total, pne_data
 from werkzeug.security import check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
@@ -17,6 +18,9 @@ from werkzeug.utils import secure_filename
 import requests
 from datetime import datetime
 from collections import OrderedDict
+import plotly.express as px
+import plotly.graph_objs as go
+import pandas as pd
 import os
 import re
 
@@ -206,7 +210,7 @@ class SubscriptionTable(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     service = db.Column(db.String(250))
     date = db.Column(db.String(250))
-    price = db.Column(db.Float)
+    amount = db.Column(db.Float)
     rate = db.Column(db.Integer)
     charged_date = db.Column(db.String(250))
 
@@ -215,16 +219,25 @@ class ExpenseTable(db.Model):
     __tablename__ = 'expense_table'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250))
-    price = db.Column(db.Float)
+    amount = db.Column(db.Float)
     date = db.Column(db.String(250))
 
 
 class ProfitTable(db.Model):
     __tablename__ = 'profit_table'
-    id = db.Column(db.String(250), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250))
-    price = db.Column(db.Float)
+    amount = db.Column(db.Float)
     date = db.Column(db.String(250))
+
+
+class DonationTable(db.Model):
+    __tablename__ = 'donation_table'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250))
+    amount = db.Column(db.Float)
+    date = db.Column(db.String(250))
+
 
 
 class User(UserMixin, db.Model):
@@ -676,7 +689,8 @@ def add_data(id, field):
                            preferred_day_time=preferred_day_time, date_price=date_price, comments=comments,
                            feedback=feedback, testimonial=testimonial, market_date=market_date, field=field,
                            venue_type_list=venue_type_list, performance_type_list=performance_type_list, 
-                           weekdays=weekdays, feedback_list_items=feedback_list_items, location_img=location_img)
+                           weekdays=weekdays, feedback_list_items=feedback_list_items, location_img=location_img,
+                           )
 
 
 @app.route('/commit-add/<int:id>/<field>', methods=['GET', 'POST'])
@@ -848,6 +862,66 @@ def commit_add_data(id, field):
 
         db.session.commit()
     return redirect(url_for('facility_page', id=id))
+
+
+@app.route('/add-pne-data/<string:field>', methods=['GET', 'POST'])
+# @logged_in_only
+def add_pne_data(field):
+    profit_form = AddProfitForm()
+    profit = compare_field('profit', field)
+    donation = compare_field('donation', field)
+    expense = compare_field('expense', field)
+
+    return render_template('add-pne-data.html', field=field, profit_form=profit_form, profit=profit, 
+                           donation=donation, expense=expense)
+
+
+@app.route('/commit-add-pne-data/<string:field>', methods=['GET', 'POST'])
+# @logged_in_only
+def commit_add_pne_data(field):
+    profit_form = AddProfitForm()
+
+    if field == 'profit':
+        form_name = profit_form.name.data
+        form_amount = profit_form.amount.data
+        form_date = format_date(profit_form.date.data)
+
+        new_profit = ProfitTable(
+            name = form_name,
+            amount = form_amount,
+            date = form_date,
+        )
+        db.session.add(new_profit)
+        db.session.commit()
+
+    if field == 'donation':
+        form_name = profit_form.name.data
+        form_amount = profit_form.amount.data
+        form_date = format_date(profit_form.date.data)
+
+        new_donation = DonationTable(
+            name = form_name,
+            amount = form_amount,
+            date = form_date
+        )
+        db.session.add(new_donation)
+        db.session.commit()
+
+    if field == 'expense':
+        form_name = profit_form.name.data
+        form_amount = profit_form.amount.data
+        form_date = format_date(profit_form.date.data)
+
+        new_expense = ExpenseTable(
+            name = form_name,
+            amount = form_amount,
+            date = form_date
+        )
+        db.session.add(new_expense)
+        db.session.commit()
+
+
+    return redirect(url_for('profit_expenses'))
 
 
 @app.route('/edit-field/<int:id>/<field>', methods=['GET', 'POST'])
@@ -1350,11 +1424,29 @@ def delete_data(id, field, data):
 
 
     if field == 'invoice':
-        print(data)
         delete_invoice = InvoiceTable.query.filter_by(id=data).first()
         db.session.delete(delete_invoice)
         db.session.commit()
         return redirect(url_for('invoice_list'))
+    
+
+    if field == 'profit':
+        delete_profit = ProfitTable.query.filter_by(id=data).first()
+        db.session.delete(delete_profit)
+        db.session.commit()
+        return redirect(url_for('view_pne', field='profit'))
+    
+    if field == 'donation':
+        delete_donation = DonationTable.query.filter_by(id=data).first()
+        db.session.delete(delete_donation)
+        db.session.commit()
+        return redirect(url_for('view_pne', field='donation'))
+    
+    if field == 'expense':
+        delete_expense = ExpenseTable.query.filter_by(id=data).first()
+        db.session.delete(delete_expense)
+        db.session.commit()
+        return redirect(url_for('view_pne', field='expense'))
 
 
     db.session.commit()
@@ -1372,7 +1464,6 @@ def confirm_page(id, field):
         invoice = InvoiceTable.query.filter_by(id=id).first()
     else:
         invoice = None
-
 
     return render_template('confirm.html', facility=facility, id=id, invoice=invoice)
 
@@ -1554,87 +1645,222 @@ def invoice(invoice_id):
 @app.route('/invoice-list', methods=['GET', 'POST'])
 # @logged_in_only
 def invoice_list():
-    invoices = InvoiceTable.query.all()
-    sorted_invoices = sorted(invoices, key=lambda x: x.date)
-    today = datetime.now().replace(hour=23, minute=59, second=59)
-    current_year = today.year
+    invoice_items = invoices_by_year_total(InvoiceTable, OrderedDict)
 
-    unpaid_invoices = []
-    paid_invoices = []
-    paid_total = 0
-    for invoice in sorted_invoices:
-        if invoice.paid:
-            paid_invoices.append(invoice)
-            paid = float(invoice.price)
-            paid_total += paid
-        else:
-            unpaid_invoices.append(invoice)
+    this_year_paid_invoices = invoice_items[0]
+    current_invoices = invoice_items[1]
+    overdue_invoices = invoice_items[2]
+    future_invoices = invoice_items[3]
 
-    paid_invoices = sorted(paid_invoices, key=lambda x: x.date, reverse=True)
+    this_year_paid_total = invoice_items[4]
+    current_total = invoice_items[5]
+    overdue_total = invoice_items[6]
+    future_total = invoice_items[7]
 
-    this_year_paid_invoices = []
-    paid_invoices_by_year = {}
-    yearly_totals = {} 
-
-    for invoice in paid_invoices:
-        invoice_date = datetime.strptime(invoice.date, "%m/%d/%Y")
-        invoice_year = invoice_date.year
-        
-        if invoice_year < current_year:
-            if invoice_year not in paid_invoices_by_year:
-                paid_invoices_by_year[invoice_year] = []
-            paid_invoices_by_year[invoice_year].append(invoice)
-        else:
-            this_year_paid_invoices.append(invoice)
-
-    for year, invoices in paid_invoices_by_year.items():
-        total = sum(float(invoice.price) for invoice in invoices)
-        yearly_totals[year] = format_float_as_string(total)
-
-    for year, total in yearly_totals.items():
-        yearly_totals[year] = format_float_as_string(float(total))
-
-    paid_invoices_by_year = OrderedDict(sorted(paid_invoices_by_year.items(), key=lambda x: x[0], reverse=True))
-
-
-    future_invoices = []
-    future_total = 0
-    overdue_invoices = []
-    overdue_total = 0
-    current_invoices = []
-    current_total = 0
-    for invoice in unpaid_invoices:
-        due_date = datetime.strptime(invoice.due_date, '%m/%d/%Y')
-        start_date = datetime.strptime(invoice.date, '%m/%d/%Y')
-        if start_date > today:
-            future_invoices.append(invoice)
-            future = float(invoice.price)
-            future_total += future
-        elif due_date < today:
-            overdue_invoices.append(invoice)
-            overdue = float(invoice.price)
-            overdue_total += overdue
-        else:
-            current_invoices.append(invoice)
-            current = float(invoice.price)
-            current_total += current
-
-    paid_total = format_float_as_string(paid_total)
-    future_total = format_float_as_string(future_total)
-    overdue_total = format_float_as_string(overdue_total)
-    current_total = format_float_as_string(current_total)
+    paid_invoices_by_year = invoice_items[8]
+    yearly_totals = invoice_items[9]
 
     return render_template('invoice-list.html', this_year_paid_invoices=this_year_paid_invoices, 
                            current_invoices=current_invoices, overdue_invoices=overdue_invoices, 
-                           paid_total=paid_total, overdue_total=overdue_total,current_total=current_total, 
-                           future_invoices=future_invoices, future_total=future_total, 
-                           paid_invoices_by_year=paid_invoices_by_year, yearly_totals=yearly_totals)
+                           this_year_paid_total=this_year_paid_total, overdue_total=overdue_total,
+                           current_total=current_total, future_invoices=future_invoices, 
+                           future_total=future_total, paid_invoices_by_year=paid_invoices_by_year, 
+                           yearly_totals=yearly_totals)
 
 
 @app.route('/profit-expenses', methods=['GET', 'POST'])
 # @logged_in_only
 def profit_expenses():
-    return render_template('profit-expenses.html')
+    invoice_items = invoices_by_year_total(InvoiceTable, OrderedDict)
+
+    this_year_paid_total = invoice_items[4]
+    yearly_invoice_totals = invoice_items[9]
+    monthly_invoice_totals = invoice_items[10]
+
+
+    profit_items = pne_data(ProfitTable)
+    current_profits = profit_items[0]
+    current_profit_total = profit_items[1]
+    monthly_profit_totals = profit_items[4]
+
+    donation_items = pne_data(DonationTable)
+    current_donations = donation_items[0]
+    current_donation_total = donation_items[1]
+    monthly_donation_totals = donation_items[4]
+
+    expense_items = pne_data(ExpenseTable)
+    current_expenses = expense_items[0]
+    current_expense_total = expense_items[1]
+    monthly_expense_totals = expense_items[4]
+
+    combined_monthly_profit = {month: 0.0 for month in range(1, 13)}
+
+    for d in [monthly_invoice_totals, monthly_profit_totals, monthly_donation_totals]:
+        for month_str, total_str in d.items():
+            month = int(month_str)
+            total = float(total_str)
+            combined_monthly_profit[month] += total
+
+
+    combined_monthly_expenses = {month: 0.0 for month in range(1, 13)}
+
+    for d in [monthly_expense_totals]:
+        for month_str, total_str in d.items():
+            month = int(month_str)
+            total = float(total_str)
+            combined_monthly_expenses[month] += total
+     
+
+    total_profits_pne = float(this_year_paid_total) + float(current_profit_total) + float(current_donation_total) 
+    total_expenses_pne = float(current_expense_total)
+    net_total = total_profits_pne - total_expenses_pne
+
+    total_profits_pne = format_float_as_string(total_profits_pne)
+    total_expenses_pne = format_float_as_string(total_expenses_pne)
+    net_total = format_float_as_string(net_total)
+    
+    current_profit_total = format_float_as_string(float(current_profit_total))
+    current_donation_total = format_float_as_string(current_donation_total)
+
+    current_expense_total = format_float_as_string(current_expense_total)
+
+
+
+    
+    # Create DataFrames from the data
+    df1 = pd.DataFrame({'Month': list(combined_monthly_profit.keys()), 'Profit': list(combined_monthly_profit.values())})
+    df2 = pd.DataFrame({'Month': list(combined_monthly_expenses.keys()), 'Expenses': list(combined_monthly_expenses.values())})
+
+    # colors = {'Profit': 'green', 'Expenses': 'red'}
+    # # Create the bar chart with Plotly
+    # fig = px.bar(df1, x='Month', y='Profit', title='Monthly Profit and Expenses',
+    #             labels={'Profit': 'Combined Monthly Profit'},
+    #             color_discrete_map=colors)
+    # fig.add_bar(x=df2['Month'], y=df2['Expenses'], name='Combined Monthly Expenses')
+
+    # # Save the chart as an image file (optional)
+    # fig.write_image('static/temp/monthly_profit_and_expenses.png', format='png', width=800, height=400)
+
+    # Define custom colors for each category
+    color_scale1 = ['green'] * len(df1)
+    color_scale2 = ['red'] * len(df2)
+
+    # Create the bar chart with custom colors
+    fig = go.Figure()
+
+    # Add 'Profit' bars
+    fig.add_trace(go.Bar(
+        x=df1['Month'],
+        y=df1['Profit'],
+        name='Combined Monthly Profit',
+        marker_color=color_scale1,
+    ))
+
+    # Add 'Expenses' bars
+    fig.add_trace(go.Bar(
+        x=df2['Month'],
+        y=df2['Expenses'],
+        name='Combined Monthly Expenses',
+        marker_color=color_scale2,
+    ))
+        
+        # Customize the layout
+    fig.update_layout(
+        title='Monthly Profit and Expenses',
+        xaxis=dict(title='Month', tickvals=list(combined_monthly_profit.keys()), 
+                   ticktext=[str(month) for month in combined_monthly_profit.keys()]),
+        yaxis=dict(title='Total'),
+        barmode='group',
+    )
+
+    # Save the chart as an image file (optional)
+    fig.write_image('static/temp/monthly_profit_and_expenses.png', format='png', width=800, height=400)
+
+
+
+    return render_template('profit-expenses.html', total_profits_pne=total_profits_pne, 
+                           current_profit_total=current_profit_total, this_year_paid_total=this_year_paid_total,
+                           current_donations=current_donations, current_donation_total=current_donation_total,
+                           total_expenses_pne=total_expenses_pne, current_expense_total=current_expense_total,
+                           net_total=net_total)
+
+
+
+@app.route('/view-pne/<string:field>', methods=['GET', 'POST'])
+# @logged_in_only
+def view_pne(field):
+    today = datetime.now().replace(hour=23, minute=59, second=59)
+    current_year = today.year
+
+    if 'profit' == field:
+        profit_items = pne_data(ProfitTable)
+        current_profits = sorted(profit_items[0], reverse=True, key=lambda x: x.date)
+        current_profit_total = format_float_as_string(profit_items[1])
+        profits_by_year = profit_items[2]
+        profit_yearly_totals = profit_items[3]
+    else:
+        profit_items = None
+        current_profits = None
+        current_profit_total = None
+        profits_by_year = None
+        profit_yearly_totals = None
+    
+    if 'donation' == field:
+        donation_items = pne_data(DonationTable)
+        current_donations = sorted(donation_items[0], reverse=True, key=lambda x: x.date)
+        current_donation_total = format_float_as_string(donation_items[1])
+        donations_by_year = donation_items[2]
+        donation_yearly_totals = donation_items[3]
+    else:
+        donation_items = None
+        current_donations = None
+        current_donation_total = None
+        donations_by_year = None
+        donation_yearly_totals = None
+
+    if 'expense' == field:
+        expense_items = pne_data(ExpenseTable)
+        current_expenses = sorted(expense_items[0], reverse=True, key=lambda x: x.date)
+        current_expense_total = format_float_as_string(expense_items[1])
+        expenses_by_year = expense_items[2]
+        expense_yearly_totals = expense_items[3]
+    else:
+        expense_items = None
+        current_expenses = None
+        current_expense_total = None
+        expenses_by_year = None
+        expense_yearly_totals = None
+
+    if 'invoices' == field:
+        invoice_items = invoices_by_year_total(InvoiceTable, OrderedDict)
+
+        this_year_paid_invoices = invoice_items[0]
+        current_invoices = invoice_items[1]
+
+        this_year_paid_total = invoice_items[4]
+        current_total = invoice_items[5]
+
+        paid_invoices_by_year = invoice_items[8]
+        invoice_yearly_totals = invoice_items[9]  
+    else:
+        invoice_items = None
+        this_year_paid_invoices = None
+        current_invoices = None
+        this_year_paid_total = None
+        current_total = None
+        paid_invoices_by_year = None
+        invoice_yearly_totals = None
+    
+    
+
+    return render_template('view-pne.html', current_profits=current_profits, current_profit_total=current_profit_total,
+                           profits_by_year=profits_by_year, profit_yearly_totals=profit_yearly_totals, current_donations=current_donations,
+                           current_donation_total=current_donation_total, donations_by_year=donations_by_year, current_year=current_year,
+                           donation_yearly_totals=donation_yearly_totals, current_expenses=current_expenses, 
+                           expenses_by_year=expenses_by_year, current_expense_total=current_expense_total, expense_yearly_total=expense_yearly_totals,
+                           this_year_paid_invoices=this_year_paid_invoices, current_invoices=current_invoices, this_year_paid_total=this_year_paid_total,
+                           current_total=current_total, paid_invoices_by_year=paid_invoices_by_year, invoice_yearly_totals=invoice_yearly_totals,
+                           invoice_items=invoice_items)
 
 
 @app.route('/logout')

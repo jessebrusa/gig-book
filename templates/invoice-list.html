@@ -19,7 +19,7 @@
                             <td>DELETE</td>
                         </tr>
                         {% for invoice in overdue_invoices %}
-                            <tr data-href="{{ url_for('invoice', invoice_id=invoice.id) }}">
+                            <tr>
                                 <td>{{ invoice.id }}</td>
                                 <td>{{ invoice.facility }}</td>
                                 <td>
@@ -105,7 +105,7 @@
                     </table>           
                 </div>
             {% endif %} 
-            <h2>Paid Invoices | Total ${{ paid_total }}</h2>
+            <h2>This Year Paid Invoices | Total ${{ this_year_paid_total }}</h2>
             <div class="tableBtnContainer">
                 <table class="tableContent">
                     <tr>

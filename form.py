@@ -128,5 +128,13 @@ class InvoiceForm(FlaskForm):
 
 
 class AddTitleForm(FlaskForm):
-    title = StringField('Title')
+    title = StringField('Title', validators=[DataRequired()])
     submit = SubmitField('Submit')
+
+
+class AddProfitForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    amount = FloatField('Amount', validators=[DataRequired()])
+    date = DateField('Date', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+

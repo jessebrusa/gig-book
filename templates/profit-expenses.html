@@ -3,7 +3,51 @@
 <body>  
     <div class="libraryItemsContainer tableItemsBtn">
         <div class="formContainerColumn tableContainer">
-            <h1>Invoices</h1>
+            <h1>Profits and Expenses</h1>
+            <div class="pneContainer">
+                <div class="sidePNEBtn">
+                    <a class="editBtn widthBtn sideBtn greenBtn" href="{{ url_for('add_pne_data', field='profit') }}">Add<br>Misc.</a>
+                    <a class="editBtn widthBtn sideBtn greenBtn" href="{{ url_for('add_pne_data', field='donation') }}">Add<br>Donation</a>
+                </div>
+                <div class="middlePNEBtn">
+                    <div class="middlePNEBtnTop">
+                        <div class="pneColumn">
+                            <h2><u>Profits</u></h2>
+                            <p>Invoices: ${{ this_year_paid_total }}</p>
+                            <p>Misc.: ${{ current_profit_total }}</p>
+                            <p>Donations: ${{ current_donation_total }}</p>
+                            <hr class="lineBreakTotal">
+                            <h3>Total: ${{ total_profits_pne }}</h3>
+                        </div>
+                        <div class="pneColumn">
+                            <h2><u>Net</u></h2>
+                            <img src="../static/temp/monthly_profit_and_expenses.png" alt="Image of bar graph of monthly totals" class="barGraph">
+                            <h3>Total: ${{ net_total }}</h3>
+                        </div>
+        
+                        <div class="pneColumn">
+                            <h2><u>Expenses</u></h2>
+                            <p>Expenses: ${{ current_expense_total }}</p>
+                            <p>Subscriptions: $placeholder</p>
+                            <hr class="lineBreakTotal">
+                            <h3>Total: ${{ total_expenses_pne }}</h3>
+                        </div>
+                    </div>
+                    <div class="middlePNEBtnBottom">
+                        <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="{{ url_for('view_pne', field='invoices') }}">View<br>Invoices</a>
+                        <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="{{ url_for('view_pne', field='profit') }}">View<br>Misc.</a>
+                        <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="{{ url_for('view_pne', field='donation') }}">View<br>Donations</a>
+                        <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="{{ url_for('view_pne', field='expense') }}">View<br>Expenses</a>
+                        <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="#">View<br>Subscriptions</a>
+                        <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="#">View<br>Mileage</a>
+                    </div>
+                </div>
+                <div class="sidePNEBtn">
+                    <a class="editBtn widthBtn sideBtn redBtn" href="{{ url_for('add_pne_data', field='expense') }}">Add<br>Expense</a>
+                    <a class="editBtn widthBtn sideBtn redBtn" href="#">Add<br>Subscription</a>
+                    <a class="editBtn widthBtn sideBtn redBtn" href="#">Add<br>Mileage</a>
+                </div>
+            </div>
         </div>
     </div>
 </body>
