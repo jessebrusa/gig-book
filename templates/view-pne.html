@@ -200,6 +200,77 @@
                     </table>           
                 </div>
             {% endif %}
+            {% if current_mileage_items %}
+                <h1>Mileage</h1>
+                <h2>Miles Drove This Year {{ current_year }} | Total: {{ mileage_total }}</h2>
+                <div class="tableBtnContainer">
+                    <table class="tableContent">
+                        <tr>
+                            <td>ID</td>
+                            <td>Name</td>
+                            <td>Street</td>
+                            <td>Town</td>
+                            <td>State</td>
+                            <td>Zip-Code</td>
+                            <td>Distance-Hour</td>
+                            <td>Distance_Min</td>
+                            <td>Date</td>
+                            <td>Miles</td>
+                            <td>DELETE</td>
+                        </tr>
+                        {% for mileage in current_mileage_items %}
+                            <tr>
+                                <td>{{ mileage.id }}</td>
+                                <td>{{ mileage.name }}</td>
+                                <td>${{ mileage.street }}</td>
+                                <td>{{ mileage.town }}</td>
+                                <td>{{ mileage.state }}</td>
+                                <td>{{ mileage.zip_code }}</td>
+                                <td>{{ mileage.distance_hour }}</td>
+                                <td>{{ mileage.distance_min }}</td>
+                                <td>{{ mileage.date }}</td>
+                                <td>{{ mileage.miles }}</td>
+                                <td><a class="delete widthBtn" href="{{ url_for('delete_data', id=1, field='mileage', data=mileage.id) }}">DELETE</a></td>  
+                            </tr>
+                        {% endfor %}
+                    </table>           
+                </div>
+            {% endif %}
+            {% if mileage_by_year %}
+                    {% for year, all_mileage in mileage_by_year.items() %}
+                        <h2>Miles Drove {{ year }} | Total Miles: {{ mileage_totals_by_year.get(year, 'N/A') }}</h2>
+                        <div class="tableBtnContainer">
+                            <table class="tableContent">
+                                <tr>
+                                    <td>ID</td>
+                                    <td>Name</td>
+                                    <td>Address</td>
+                                    <td>Price</td>
+                                    <td>Date</td>
+                                    <td>Due-Date</td>
+                                    <td>Paid-On</td>
+                                    <td>View</td>
+                                    <td>DELETE</td>
+                                </tr>
+                                {% for mileage in all_mileage %}
+                                <tr>
+                                    <td>{{ mileage.id }}</td>
+                                    <td>{{ mileage.name }}</td>
+                                    <td>${{ mileage.street }}</td>
+                                    <td>{{ mileage.town }}</td>
+                                    <td>{{ mileage.state }}</td>
+                                    <td>{{ mileage.zip_code }}</td>
+                                    <td>{{ mileage.distance_hour }}</td>
+                                    <td>{{ mileage.distance_min }}</td>
+                                    <td>{{ mileage.date }}</td>
+                                    <td>{{ mileage.miles }}</td>
+                                <td><a class="delete widthBtn" href="{{ url_for('delete_data', id=1, field='mileage', data=mileage.id) }}">DELETE</a></td>  
+                                </tr>
+                        {% endfor %}
+                            </table>              
+                        </div>
+                    {% endfor %}
+                {% endif %}
             {% if expenses_by_year %}
                 {% for year, expenses in expenses_by_year.items() %}
                     <h2>{{ year }} Invoices | Total ${{ expense_yearly_totals.get(year, 'N/A') }}</h2>
@@ -208,8 +279,8 @@
                             <tr>
                                 <td>ID</td>
                                 <td>Name</td>
-                                <td>Price</td>
                                 <td>Amount</td>
+                                <td>Date</td>
                                 <td>DELETE</td>
                             </tr>
                             {% for expense in expenses %}
@@ -225,7 +296,36 @@
                         </table>              
                     </div>
                 {% endfor %}
-            {% endif %}  
+            {% endif %}
+            {% if subscription_items %}
+                    <h2>Subscription Monthly Total ${{ sub_total }}</h2>
+                    <div class="tableBtnContainer">
+                        <table class="tableContent">
+                            <tr>
+                                <td>ID</td>
+                                <td>Service</td>
+                                <td>Price</td>
+                                <td>Rate</td>
+                                <td>Start-Date</td>
+                                <td>Next Charge-Date</td>
+                                <td>DELETE</td>
+                            </tr>
+                            {% for sub in subscription_items %}
+                                <tr>
+                                    <td>{{ sub.id }}</td>
+                                    <td>{{ sub.service }}</td>
+                                    <td>${{ sub.amount}}</td>
+                                    <td>{{ sub.rate }}</td>
+                                    <td>{{ sub.start_date }}</td>
+                                    <td>{{ sub.charge_date }}</td>
+                                    <td><a class="delete widthBtn" href="{{ url_for('delete_data', id=1, field='subscription', data=sub.id) }}">DELETE</a></td>  
+                                </tr>
+                                </tr>
+                            {% endfor %}
+                        </table>              
+                    </div>
+            
+            {% endif %}   
         </div>
     </div>
 </body>

@@ -497,7 +497,11 @@ def invoices_by_year_total(table, ordered_dict):
 
 
 
-def pne_data(table):
+def pne_data(table, **kwargs):
+    if kwargs.get('expense'):
+        expense = True
+    else:
+        expense = None
     profits = table.query.all()
     sorted_profits = sorted(profits, key=lambda x: x.date)
     today = datetime.now().replace(hour=23, minute=59, second=59)
@@ -544,7 +548,7 @@ def pne_data(table):
         monthly_totals[month] = format_float_as_string(float(total))
 
     return [current_profits, current_profit_total, 
-            profits_by_year, yearly_totals, monthly_totals]
+            profits_by_year, yearly_totals, monthly_totals, future_profits]
 
 
 bible_url = 'http://labs.bible.org/api/?'

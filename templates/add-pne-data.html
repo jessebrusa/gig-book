@@ -31,9 +31,61 @@
                         <label class="leftItem">Date:</label>
                         {{ profit_form.date(class_='dateCalendar') }}
                     </div>
-                {% endif %}   
+                {% endif %}
+                {% if subscription %}
+                    <h2>Add A Subscription</h2>
+                    <div class="formRow">
+                        <label class="leftItem">Service:</label>
+                        {{ sub_form.service(class_='inputField') }}
+                    </div>
+                    <div class="formRow">
+                        <label class="leftItem">Amount $:</label>
+                        {{ sub_form.amount(class_='inputField') }}
+                    </div>
+                    <div class="formRow">
+                        <label class="leftItem">Rate of Charge:</label>
+                        {{ sub_form.rate(class_='inputField') }}
+                    </div>
+                    <div class="formRow">
+                        <label class="leftItem">Start Date:</label>
+                        {{ sub_form.start_date(class_='dateCalendar') }}
+                    </div>
+                {% endif %}
+                {% if mileage %}
+                    <h2>Add Mileage</h2>
+                    <div class="formRow">
+                        <label class="leftItem">Name:</label>
+                        {{ mileage_form.name(class_='inputField') }}
+                    </div>
+                    <div class="formRow">
+                        <label class="leftItem">Street:</label>
+                        {{ mileage_form.street(class_='inputField') }}
+                    </div>
+                    <div class="formRow">
+                        <label class="leftItem">Town:</label>
+                        {{ mileage_form.town(class_='inputField') }}
+                    </div>
+                    <div class="formRow">
+                        <label class="leftItem">State:</label>
+                        {{ mileage_form.state(class_='dropdownOption') }}
+                    </div>
+                    <div class="formRow">
+                        <label class="leftItem">Zip-Code:</label>
+                        {{ mileage_form.zip_code(class_='inputField') }}
+                    </div>
+                    <div class="formRow">
+                        <label class="leftItem">Date:</label>
+                        {{ mileage_form.date(class_='dateCalendar') }}
+                    </div>
+                {% endif %}      
             </div>
-            {{ profit_form.submit(class_='submitButton') }}
+            {% if profit or donation or expense%}
+                {{ profit_form.submit(class_='submitButton') }}
+            {% elif subscription %}
+                {{ sub_form.submit(class_='submitButton') }}
+            {% elif mileage %}
+                {{ mileage_form.submit(class_='submitButton') }}
+            {% endif %}
         </div> 
     </form>
 </body>

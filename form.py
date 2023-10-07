@@ -44,6 +44,10 @@ performance_title_list = [('Hope with Heather Rae'), ('Get Happy with Heather Ra
                           ('God Bless the USA with Heather Rae'), ('Worship with Heather Rae'), ('Hymns with Heather Rae'),
                           ('Give Thanks with Heather Rae')]
 
+
+rate_frequency_list = [('Weekly'), ('Bi-Weekly'), ('Monthly')]
+
+
 class AddressBookForm(FlaskForm):
     facility = StringField('Facility Name', validators=[DataRequired()])
     contact_person = StringField('Contact Person', validators=[DataRequired()])
@@ -138,3 +142,20 @@ class AddProfitForm(FlaskForm):
     date = DateField('Date', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
+
+class AddSubscriptionForm(FlaskForm):
+    service = StringField('Service', validators=[DataRequired()])
+    start_date = DateField('Start Date', validators=[DataRequired()])
+    amount = FloatField('Amount', validators=[DataRequired()])
+    rate = SelectField('Rate', choices=rate_frequency_list)
+    submit = SubmitField('Submit')
+
+
+class AddMileageForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    street = StringField('Street', validators=[DataRequired()])
+    town = StringField('Town', validators=[DataRequired()])
+    state = SelectField('State', choices=states, validators=[DataRequired()])
+    zip_code = StringField('Zip-Code', validators=[DataRequired()])
+    date = DateField('Date')
+    submit = SubmitField('Submit')

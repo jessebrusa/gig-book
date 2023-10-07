@@ -2,7 +2,8 @@ from flask import Flask, render_template, redirect, url_for, request, make_respo
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from form import AddressBookForm, weekdays, venue_type_list, performance_type_list, \
-feedback_list_items, LoginForm, MassEmailForm, InvoiceForm, AddTitleForm, AddProfitForm
+feedback_list_items, LoginForm, MassEmailForm, InvoiceForm, AddTitleForm, AddProfitForm, \
+    AddSubscriptionForm, AddMileageForm
 from resources import ext_phone, phone_to_string, format_duration, compare_field, last_item, image_url, \
 format_url_date, compare_field_return_data, compare_field_address, edit_data_method,  edit_address_method, \
 date_key, edit_mass_email_method, set_list_form_submit, generate_hash_salt, bible_url, params, \
@@ -16,9 +17,9 @@ from flask_login import UserMixin, login_user, LoginManager, current_user, logou
 from functools import wraps
 from werkzeug.utils import secure_filename
 import requests
-from datetime import datetime
-from collections import OrderedDict
-import plotly.express as px
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+from collections import OrderedDict, defaultdict
 import plotly.graph_objs as go
 import pandas as pd
 import os
@@ -52,7 +53,6 @@ class DataBase(db.Model):
     distance_min = db.Column(db.Integer)
     location_img_url = db.Column(db.String(250))
     mass_email = db.Column(db.Boolean)
-    mileage = db.Column(db.Integer)
 
     contact_person = db.relationship('ContactTable')
     email = db.relationship('EmailTable')
@@ -68,6 +68,7 @@ class DataBase(db.Model):
     feedback = db.relationship('FeedbackTable')
     testimonials = db.relationship('TestimonialTable')
     invoice = db.relationship('InvoiceTable')
+    mileage = db.relationship('MileageTable')
 
 
 class ContactTable(db.Model):
@@ -209,10 +210,10 @@ class SubscriptionTable(db.Model):
     __tablename__ = 'subscription_table'
     id = db.Column(db.Integer, primary_key=True)
     service = db.Column(db.String(250))
-    date = db.Column(db.String(250))
+    start_date = db.Column(db.String(250))
     amount = db.Column(db.Float)
     rate = db.Column(db.Integer)
-    charged_date = db.Column(db.String(250))
+    charge_date = db.Column(db.String(250))
 
 
 class ExpenseTable(db.Model):
@@ -238,6 +239,21 @@ class DonationTable(db.Model):
     amount = db.Column(db.Float)
     date = db.Column(db.String(250))
 
+
+class MileageTable(db.Model):
+    __tablename__ = 'mileage_table'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250))
+    street = db.Column(db.String(250))
+    town = db.Column(db.String(250))
+    state = db.Column(db.String(250))
+    zip_code = db.Column(db.String(250))
+    miles = db.Column(db.Integer)
+    distance_hour = db.Column(db.Integer)
+    distance_min = db.Column(db.Integer)
+    date = db.Column(db.String(250))
+
+    data_base_id = db.Column(db.Integer, db.ForeignKey('database.id'))
 
 
 class User(UserMixin, db.Model):
@@ -421,8 +437,6 @@ def form():
                     distance_numeric = None  
                 
 
-
-
         new_entry = DataBase(
             facility = form.facility.data,
             state = form.state.data,
@@ -433,7 +447,6 @@ def form():
             distance_min = travel_minutes,
             location_img_url = location_img_url,
             mass_email = form.mass_email.data,
-            mileage = distance_numeric,
         )
         db.session.add(new_entry)
         db.session.commit()
@@ -868,18 +881,26 @@ def commit_add_data(id, field):
 # @logged_in_only
 def add_pne_data(field):
     profit_form = AddProfitForm()
+    sub_form = AddSubscriptionForm()
+    mileage_form = AddMileageForm()
+
     profit = compare_field('profit', field)
     donation = compare_field('donation', field)
     expense = compare_field('expense', field)
+    subscription = compare_field('subscription', field)
+    mileage = compare_field('mileage', field)
 
     return render_template('add-pne-data.html', field=field, profit_form=profit_form, profit=profit, 
-                           donation=donation, expense=expense)
+                           donation=donation, expense=expense, subscription=subscription, sub_form=sub_form,
+                           mileage=mileage, mileage_form=mileage_form)
 
 
 @app.route('/commit-add-pne-data/<string:field>', methods=['GET', 'POST'])
 # @logged_in_only
 def commit_add_pne_data(field):
     profit_form = AddProfitForm()
+    sub_form = AddSubscriptionForm()
+    mileage_form = AddMileageForm()
 
     if field == 'profit':
         form_name = profit_form.name.data
@@ -919,7 +940,99 @@ def commit_add_pne_data(field):
         )
         db.session.add(new_expense)
         db.session.commit()
+    
+    if field == 'subscription':
+        form_name = sub_form.service.data
+        form_amount = sub_form.amount.data
+        form_date = format_date(sub_form.start_date.data)
+        form_rate = sub_form.rate.data
 
+        new_sub = SubscriptionTable(
+                    service = form_name,
+                    start_date = form_date,
+                    amount = form_amount,
+                    rate = form_rate,
+                    charge_date = form_date,
+                )
+        db.session.add(new_sub)
+        db.session.commit()
+        
+        today = datetime.now().replace(hour=23, minute=59, second=59)
+        charge_date_obj = datetime.strptime(new_sub.charge_date, '%m/%d/%Y')
+        
+        while charge_date_obj < today:
+
+            new_expense = ExpenseTable(
+                name = f'SUB: {new_sub.service}',
+                amount = new_sub.amount,
+                date = new_sub.charge_date,
+            )
+            db.session.add(new_expense)
+            db.session.commit()
+
+            if new_sub.rate == 'Weekly':
+                charge_date = charge_date_obj + timedelta(days=7)
+            elif new_sub.rate == 'Bi-Weekly':
+                charge_date = charge_date_obj + timedelta(days=14)
+            elif new_sub.rate == 'Monthly':
+                charge_date = charge_date_obj + relativedelta(months=1)
+
+            charge_date_string = charge_date.strftime('%m/%d/%Y')
+            new_sub.charge_date = charge_date_string
+            db.session.commit()
+
+            charge_date_obj = datetime.strptime(new_sub.charge_date, '%m/%d/%Y')
+
+    
+    if field == 'mileage':
+        form_name = mileage_form.name.data
+        form_street = mileage_form.street.data
+        form_town = mileage_form.town.data
+        form_state = mileage_form.state.data
+        form_zip_code = mileage_form.zip_code.data
+        form_date = format_date(mileage_form.date.data)
+
+        destination_address = f'{form_street}, {form_town}, {form_state}, {form_zip_code}'
+        maps_url = f'https://maps.googleapis.com/maps/api/directions/json?origin={ORIGIN}&destination={destination_address}&key={MAPS_DIRECTIONS_API_KEY}'
+
+        response = requests.get(maps_url)
+        data = response.json()
+
+        if data['status'] == 'OK':
+            duration_text = data['routes'][0]['legs'][0]['duration']['text']
+            distance_text = data['routes'][0]['legs'][0]['distance']['text']
+            parts = duration_text.split(' ')
+            travel_hours, travel_minutes = 0, 0  
+            for i in range(len(parts)):
+                if parts[i] == 'hour' or parts[i] == 'hours':
+                    travel_hours = int(parts[i - 1])
+                    if travel_hours == 0:
+                        travel_hours = None
+                elif parts[i] == 'min' or parts[i] == 'mins':
+                    travel_minutes = int(parts[i - 1])
+                    if travel_minutes == 0:
+                        travel_minutes = None
+            distance_numeric = re.search(r'\d+', distance_text)
+
+            if distance_numeric:
+                distance_numeric = int(distance_numeric.group())
+            else:
+                distance_numeric = None  
+
+        new_mileage = MileageTable(
+            name = form_name,
+            street = form_street,
+            town = form_town,
+            state = form_state,
+            zip_code = form_zip_code,
+            distance_hour = travel_hours,
+            distance_min = travel_minutes,
+            date = form_date,
+            miles = distance_numeric
+        )
+        db.session.add(new_mileage)
+        db.session.commit()
+      
 
     return redirect(url_for('profit_expenses'))
 
@@ -1436,17 +1549,33 @@ def delete_data(id, field, data):
         db.session.commit()
         return redirect(url_for('view_pne', field='profit'))
     
+
     if field == 'donation':
         delete_donation = DonationTable.query.filter_by(id=data).first()
         db.session.delete(delete_donation)
         db.session.commit()
         return redirect(url_for('view_pne', field='donation'))
     
+
     if field == 'expense':
         delete_expense = ExpenseTable.query.filter_by(id=data).first()
         db.session.delete(delete_expense)
         db.session.commit()
         return redirect(url_for('view_pne', field='expense'))
+
+
+    if field == 'subscription':
+        delete_sub = SubscriptionTable.query.filter_by(id=data).first()
+        db.session.delete(delete_sub)
+        db.session.commit()
+        return redirect(url_for('view_pne', field='subscription'))
+
+
+    if field == 'mileage':
+        delete_mileage = MileageTable.query.filter_by(id=data).first()
+        db.session.delete(delete_mileage)
+        db.session.commit()
+        return redirect(url_for('view_pne', field='mileage'))
 
 
     db.session.commit()
@@ -1604,6 +1733,37 @@ def invoice_form(id):
         db.session.add(new_invoice)
         db.session.commit()
 
+        destination_address = f'{new_invoice.street}, {new_invoice.town}, {new_invoice.state}, {new_invoice.zip_code}'
+        maps_url = f'https://maps.googleapis.com/maps/api/directions/json?origin={ORIGIN}&destination={destination_address}&key={MAPS_DIRECTIONS_API_KEY}'
+
+        response = requests.get(maps_url)
+        data = response.json()
+
+        if data['status'] == 'OK':
+            distance_text = data['routes'][0]['legs'][0]['distance']['text']
+
+        distance_numeric = re.search(r'\d+', distance_text)
+
+        if distance_numeric:
+            distance_numeric = int(distance_numeric.group())
+        else:
+            distance_numeric = None  
+
+        new_mileage = MileageTable(
+            name = new_invoice.facility,
+            street = new_invoice.street,
+            town = new_invoice.town,
+            state = new_invoice.state,
+            zip_code = new_invoice.zip_code,
+            distance_hour = facility.distance_hour,
+            distance_min = facility.distance_min,
+            date = new_invoice.date,
+            miles = distance_numeric,
+            data_base_id = facility.id
+        )
+        db.session.add(new_mileage)
+        db.session.commit()
+
         invoice_id = new_invoice.id
 
         return redirect(url_for('invoice', invoice_id=invoice_id))
@@ -1717,7 +1877,10 @@ def profit_expenses():
 
     total_profits_pne = format_float_as_string(total_profits_pne)
     total_expenses_pne = format_float_as_string(total_expenses_pne)
-    net_total = format_float_as_string(net_total)
+    if net_total == 0:
+        net_total = None
+    else:
+        net_total = format_float_as_string(net_total)
     
     current_profit_total = format_float_as_string(float(current_profit_total))
     current_donation_total = format_float_as_string(current_donation_total)
@@ -1725,30 +1888,66 @@ def profit_expenses():
     current_expense_total = format_float_as_string(current_expense_total)
 
 
+    subscriptions = SubscriptionTable.query.all()
+    for sub in subscriptions:
+        today = datetime.now().replace(hour=23, minute=59, second=59)
+        charge_date_obj = datetime.strptime(sub.charge_date, '%m/%d/%Y')
+        
+        while charge_date_obj < today:
 
+            new_expense = ExpenseTable(
+                name = f'SUB: {sub.service}',
+                amount = sub.amount,
+                date = sub.charge_date,
+            )
+            db.session.add(new_expense)
+            db.session.commit()
+
+            if sub.rate == 'Weekly':
+                charge_date = charge_date_obj + timedelta(days=7)
+            elif sub.rate == 'Bi-Weekly':
+                charge_date = charge_date_obj + timedelta(days=14)
+            elif sub.rate == 'Monthly':
+                charge_date = charge_date_obj + relativedelta(months=1)
+
+            charge_date_string = charge_date.strftime('%m/%d/%Y')
+            sub.charge_date = charge_date_string
+            db.session.commit()
+
+            charge_date_obj = datetime.strptime(sub.charge_date, '%m/%d/%Y')
+
+    subscription_items = SubscriptionTable.query.all()
+    sub_total = 0
+    for sub in subscription_items:
+        if sub.rate == 'Weekly':
+            sub_total += float(sub.amount) * 4
+        elif sub.rate == 'Bi-Weekly':
+            sub_total += float(sub.amount) * 2
+        elif sub.rate == 'Monthly':
+            sub_total += float(sub.amount) 
+    if sub_total == 0:
+        sub_total = None
+    else:
+        sub_total = format_float_as_string(sub_total)
     
-    # Create DataFrames from the data
+    all_mileage = MileageTable.query.all()
+    mileage_total = 0
+    for mile in all_mileage:
+        mileage_total += mile.miles
+
+
+
     df1 = pd.DataFrame({'Month': list(combined_monthly_profit.keys()), 'Profit': list(combined_monthly_profit.values())})
     df2 = pd.DataFrame({'Month': list(combined_monthly_expenses.keys()), 'Expenses': list(combined_monthly_expenses.values())})
 
-    # colors = {'Profit': 'green', 'Expenses': 'red'}
-    # # Create the bar chart with Plotly
-    # fig = px.bar(df1, x='Month', y='Profit', title='Monthly Profit and Expenses',
-    #             labels={'Profit': 'Combined Monthly Profit'},
-    #             color_discrete_map=colors)
-    # fig.add_bar(x=df2['Month'], y=df2['Expenses'], name='Combined Monthly Expenses')
 
-    # # Save the chart as an image file (optional)
-    # fig.write_image('static/temp/monthly_profit_and_expenses.png', format='png', width=800, height=400)
-
-    # Define custom colors for each category
     color_scale1 = ['green'] * len(df1)
     color_scale2 = ['red'] * len(df2)
 
-    # Create the bar chart with custom colors
+ 
     fig = go.Figure()
 
-    # Add 'Profit' bars
+
     fig.add_trace(go.Bar(
         x=df1['Month'],
         y=df1['Profit'],
@@ -1756,7 +1955,7 @@ def profit_expenses():
         marker_color=color_scale1,
     ))
 
-    # Add 'Expenses' bars
+
     fig.add_trace(go.Bar(
         x=df2['Month'],
         y=df2['Expenses'],
@@ -1764,7 +1963,7 @@ def profit_expenses():
         marker_color=color_scale2,
     ))
         
-        # Customize the layout
+
     fig.update_layout(
         title='Monthly Profit and Expenses',
         xaxis=dict(title='Month', tickvals=list(combined_monthly_profit.keys()), 
@@ -1773,7 +1972,7 @@ def profit_expenses():
         barmode='group',
     )
 
-    # Save the chart as an image file (optional)
+
     fig.write_image('static/temp/monthly_profit_and_expenses.png', format='png', width=800, height=400)
 
 
@@ -1782,7 +1981,7 @@ def profit_expenses():
                            current_profit_total=current_profit_total, this_year_paid_total=this_year_paid_total,
                            current_donations=current_donations, current_donation_total=current_donation_total,
                            total_expenses_pne=total_expenses_pne, current_expense_total=current_expense_total,
-                           net_total=net_total)
+                           net_total=net_total, sub_total=sub_total, mileage_total=mileage_total)
 
 
 
@@ -1820,7 +2019,9 @@ def view_pne(field):
 
     if 'expense' == field:
         expense_items = pne_data(ExpenseTable)
-        current_expenses = sorted(expense_items[0], reverse=True, key=lambda x: x.date)
+        future_expenses = expense_items[5]
+        current_expenses = expense_items[0] + future_expenses
+        current_expenses = sorted(current_expenses, reverse=True, key=lambda x: x.date)
         current_expense_total = format_float_as_string(expense_items[1])
         expenses_by_year = expense_items[2]
         expense_yearly_totals = expense_items[3]
@@ -1830,6 +2031,7 @@ def view_pne(field):
         current_expense_total = None
         expenses_by_year = None
         expense_yearly_totals = None
+        future_expenses = None
 
     if 'invoices' == field:
         invoice_items = invoices_by_year_total(InvoiceTable, OrderedDict)
@@ -1850,7 +2052,52 @@ def view_pne(field):
         current_total = None
         paid_invoices_by_year = None
         invoice_yearly_totals = None
+
+    if 'subscription' == field:
+        subscription_items = SubscriptionTable.query.all()
+        sub_total = 0
+        for sub in subscription_items:
+            if sub.rate == 'Weekly':
+                sub_total += float(sub.amount) * 4
+            elif sub.rate == 'Bi-Weekly':
+                sub_total += float(sub.amount) * 2
+            elif sub.rate == 'Monthly':
+                sub_total += float(sub.amount) 
+        sub_total = format_float_as_string(sub_total)
+    else:
+        subscription_items = None
+        sub_total = None
+
     
+    if 'mileage' == field:
+        today = datetime.now().replace(hour=23, minute=59, second=59)
+        current_year = today.year
+        mileage_items = MileageTable.query.all()
+        current_mileage_items = []
+        mileage_total = 0
+        mileage_by_year = defaultdict(int)
+        mileage_totals_by_year = defaultdict(int)
+
+        for mileage in mileage_items:
+            mileage_date = datetime.strptime(mileage.date, '%m/%d/%Y')
+            mileage_year = mileage_date.year
+
+            if mileage_year == current_year:
+                current_mileage_items.append(mileage)
+                mileage_total += int(mileage.miles)
+
+            if mileage_year != current_year:
+                mileage_by_year[mileage_year] += int(mileage['miles'])
+                mileage_totals_by_year[mileage_year] += int(mileage['miles'])
+
+        mileage_by_year = dict(mileage_by_year)
+        mileage_totals_by_year = dict(mileage_totals_by_year)
+        current_mileage_items = sorted(current_mileage_items, reverse=True, key=lambda x: x.date)
+    else:
+        current_mileage_items = None
+        mileage_total = None
+        mileage_by_year = None
+        mileage_totals_by_year = None
     
 
     return render_template('view-pne.html', current_profits=current_profits, current_profit_total=current_profit_total,
@@ -1860,7 +2107,9 @@ def view_pne(field):
                            expenses_by_year=expenses_by_year, current_expense_total=current_expense_total, expense_yearly_total=expense_yearly_totals,
                            this_year_paid_invoices=this_year_paid_invoices, current_invoices=current_invoices, this_year_paid_total=this_year_paid_total,
                            current_total=current_total, paid_invoices_by_year=paid_invoices_by_year, invoice_yearly_totals=invoice_yearly_totals,
-                           invoice_items=invoice_items)
+                           invoice_items=invoice_items, subscription_items=subscription_items, sub_total=sub_total, 
+                           current_mileage_items=current_mileage_items, mileage_total=mileage_total,
+                           mileage_by_year=mileage_by_year, mileage_totals_by_year=mileage_totals_by_year)
 
 
 @app.route('/logout')

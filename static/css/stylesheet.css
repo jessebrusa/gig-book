@@ -184,6 +184,7 @@ h1 {
     background-color: #EEEDE7;
     border-radius: 20px;
     border: 10px solid #E7D2CC;
+    min-height: 100px;
 }
 
 .formContainer {
@@ -1099,6 +1100,14 @@ p {
 .barGraph {
     width: 500px;
     height: auto;
+}
+
+.rightAlign {
+    text-align: right;
+}
+
+.pneColumn p {
+    font-size: 18px;
 }
 
 @media only screen and (max-width: 1200px) {

@@ -24,11 +24,18 @@
                             <img src="../static/temp/monthly_profit_and_expenses.png" alt="Image of bar graph of monthly totals" class="barGraph">
                             <h3>Total: ${{ net_total }}</h3>
                         </div>
-        
                         <div class="pneColumn">
                             <h2><u>Expenses</u></h2>
                             <p>Expenses: ${{ current_expense_total }}</p>
-                            <p>Subscriptions: $placeholder</p>
+                            <div class="formRow rightAlign">
+                                <p>Subscription<br>Monthly total:</p>
+                                {% if sub_total %}
+                                    <p>${{ sub_total }}</p>
+                                {% else %}
+                                    <p>$0</p>
+                                {% endif %}
+                            </div>
+                            <p>YTD Mileage: {{ mileage_total }} miles</p>
                             <hr class="lineBreakTotal">
                             <h3>Total: ${{ total_expenses_pne }}</h3>
                         </div>
@@ -38,14 +45,14 @@
                         <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="{{ url_for('view_pne', field='profit') }}">View<br>Misc.</a>
                         <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="{{ url_for('view_pne', field='donation') }}">View<br>Donations</a>
                         <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="{{ url_for('view_pne', field='expense') }}">View<br>Expenses</a>
-                        <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="#">View<br>Subscriptions</a>
-                        <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="#">View<br>Mileage</a>
+                        <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="{{ url_for('view_pne', field='subscription') }}">View<br>Subscriptions</a>
+                        <a class="editBtn widthBtn sideBtn greyBtn scaleDown" href="{{ url_for('view_pne', field='mileage') }}">View<br>Mileage</a>
                     </div>
                 </div>
                 <div class="sidePNEBtn">
                     <a class="editBtn widthBtn sideBtn redBtn" href="{{ url_for('add_pne_data', field='expense') }}">Add<br>Expense</a>
-                    <a class="editBtn widthBtn sideBtn redBtn" href="#">Add<br>Subscription</a>
-                    <a class="editBtn widthBtn sideBtn redBtn" href="#">Add<br>Mileage</a>
+                    <a class="editBtn widthBtn sideBtn redBtn" href="{{ url_for('add_pne_data', field='subscription') }}">Add<br>Subscription</a>
+                    <a class="editBtn widthBtn sideBtn redBtn" href="{{ url_for('add_pne_data', field='mileage') }}">Add<br>Mileage</a>
                 </div>
             </div>
         </div>
