@@ -55,6 +55,41 @@
                     <a class="editBtn widthBtn sideBtn redBtn" href="{{ url_for('add_pne_data', field='mileage') }}">Add<br>Mileage</a>
                 </div>
             </div>
+            <table class="pneTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Money</th>
+                    </tr>
+                </thead>
+                <h2>This Year's Profits and Expenses</h2>
+                <tbody>
+                    {% for obj in all_objects %}
+                        <tr class="{% if obj in all_profit_objects %}green-row{% elif obj in all_expense_objects %}red-row{% endif %}">
+                            {% if obj.name %}
+                                <td>{{ obj.name }}</td>
+                            {% elif obj.service %}
+                                <td>{{ obj.service }}</td>
+                            {% elif obj.facility %}
+                                <td>INV: {{ obj.facility }}</td>
+                            {% else %}
+                                <td>placeholder name</td>
+                            {% endif %}
+                            <td>{{obj.date}}</td>
+                            {% if obj.amount %}
+                                <td>${{ obj.amount }}</td>
+                            {% elif obj.price %}
+                                <td>${{ obj.price }}</td>
+                            {% elif obj.miles %}
+                                <td>{{ obj.miles }} Miles</td>
+                            {% else %}
+                                <td>placeholder money</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </body>

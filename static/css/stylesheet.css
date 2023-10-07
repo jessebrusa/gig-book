@@ -1100,14 +1100,47 @@ p {
 .barGraph {
     width: 500px;
     height: auto;
+    transition: 300ms;
+}
+
+.barGraph:hover {
+    transform: scale(2.4);
+    z-index: 5;
+    margin-right: -20px;
+    
 }
 
 .rightAlign {
     text-align: right;
 }
 
+.leftAlign {
+    text-align: left;
+}
+
 .pneColumn p {
     font-size: 18px;
+}
+
+.green-row {
+    background-color: lightgreen;
+    color: black;
+}
+
+.red-row {
+    background-color: rgb(229, 155, 155);
+    color: black;
+}
+
+.pneTable {
+    background-color: white;
+    margin: 20px;
+    border-radius: 10px;
+    border: 2px solid #868B8E;
+    padding: 5px;
+    text-align: left;
+
+    font-size: 22px;
 }
 
 @media only screen and (max-width: 1200px) {

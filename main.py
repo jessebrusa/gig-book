@@ -1832,9 +1832,8 @@ def invoice_list():
 # @logged_in_only
 def profit_expenses():
     invoice_items = invoices_by_year_total(InvoiceTable, OrderedDict)
-
+    this_year_paid_invoices = invoice_items[0]
     this_year_paid_total = invoice_items[4]
-    yearly_invoice_totals = invoice_items[9]
     monthly_invoice_totals = invoice_items[10]
 
 
@@ -1848,10 +1847,13 @@ def profit_expenses():
     current_donation_total = donation_items[1]
     monthly_donation_totals = donation_items[4]
 
+
     expense_items = pne_data(ExpenseTable)
     current_expenses = expense_items[0]
     current_expense_total = expense_items[1]
     monthly_expense_totals = expense_items[4]
+
+
 
     combined_monthly_profit = {month: 0.0 for month in range(1, 13)}
 
@@ -1930,10 +1932,17 @@ def profit_expenses():
     else:
         sub_total = format_float_as_string(sub_total)
     
+    today = datetime.now().replace(hour=23, minute=59, second=59)
+    current_year = today.year
     all_mileage = MileageTable.query.all()
     mileage_total = 0
+    current_mileage = []
     for mile in all_mileage:
-        mileage_total += mile.miles
+        mileage_date = datetime.strptime(mile.date, '%m/%d/%Y')
+        mileage_year = mileage_date.year
+        if mileage_year == current_year:
+            mileage_total += mile.miles
+            current_mileage.append(mile)
 
 
 
@@ -1976,13 +1985,19 @@ def profit_expenses():
     fig.write_image('static/temp/monthly_profit_and_expenses.png', format='png', width=800, height=400)
 
 
+    all_profit_objects = this_year_paid_invoices + current_profits + current_donations
+    all_expense_objects = current_expenses + current_mileage
+    all_objects = all_profit_objects + all_expense_objects
+    all_objects = sorted(all_objects, reverse=True, key=lambda x: x.date)
+
+
 
     return render_template('profit-expenses.html', total_profits_pne=total_profits_pne, 
                            current_profit_total=current_profit_total, this_year_paid_total=this_year_paid_total,
                            current_donations=current_donations, current_donation_total=current_donation_total,
                            total_expenses_pne=total_expenses_pne, current_expense_total=current_expense_total,
-                           net_total=net_total, sub_total=sub_total, mileage_total=mileage_total)
-
+                           net_total=net_total, sub_total=sub_total, mileage_total=mileage_total, all_objects=all_objects,
+                           all_profit_objects=all_profit_objects, all_expense_objects=all_expense_objects)
 
 
 @app.route('/view-pne/<string:field>', methods=['GET', 'POST'])
@@ -2086,9 +2101,11 @@ def view_pne(field):
                 current_mileage_items.append(mileage)
                 mileage_total += int(mileage.miles)
 
-            if mileage_year != current_year:
-                mileage_by_year[mileage_year] += int(mileage['miles'])
-                mileage_totals_by_year[mileage_year] += int(mileage['miles'])
+            if mileage_year not in mileage_by_year:
+                mileage_by_year[mileage_year] = []
+
+            mileage_by_year[mileage_year].append(mileage)
+            mileage_totals_by_year[mileage_year] += int(mileage.miles)
 
         mileage_by_year = dict(mileage_by_year)
         mileage_totals_by_year = dict(mileage_totals_by_year)

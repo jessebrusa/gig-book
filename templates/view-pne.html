@@ -200,72 +200,38 @@
                     </table>           
                 </div>
             {% endif %}
-            {% if current_mileage_items %}
-                <h1>Mileage</h1>
-                <h2>Miles Drove This Year {{ current_year }} | Total: {{ mileage_total }}</h2>
-                <div class="tableBtnContainer">
-                    <table class="tableContent">
-                        <tr>
-                            <td>ID</td>
-                            <td>Name</td>
-                            <td>Street</td>
-                            <td>Town</td>
-                            <td>State</td>
-                            <td>Zip-Code</td>
-                            <td>Distance-Hour</td>
-                            <td>Distance_Min</td>
-                            <td>Date</td>
-                            <td>Miles</td>
-                            <td>DELETE</td>
-                        </tr>
-                        {% for mileage in current_mileage_items %}
-                            <tr>
-                                <td>{{ mileage.id }}</td>
-                                <td>{{ mileage.name }}</td>
-                                <td>${{ mileage.street }}</td>
-                                <td>{{ mileage.town }}</td>
-                                <td>{{ mileage.state }}</td>
-                                <td>{{ mileage.zip_code }}</td>
-                                <td>{{ mileage.distance_hour }}</td>
-                                <td>{{ mileage.distance_min }}</td>
-                                <td>{{ mileage.date }}</td>
-                                <td>{{ mileage.miles }}</td>
-                                <td><a class="delete widthBtn" href="{{ url_for('delete_data', id=1, field='mileage', data=mileage.id) }}">DELETE</a></td>  
-                            </tr>
-                        {% endfor %}
-                    </table>           
-                </div>
-            {% endif %}
             {% if mileage_by_year %}
                     {% for year, all_mileage in mileage_by_year.items() %}
-                        <h2>Miles Drove {{ year }} | Total Miles: {{ mileage_totals_by_year.get(year, 'N/A') }}</h2>
+                        <h2>Miles Drove {{ year }} | Total: {{ mileage_totals_by_year.get(year, 'N/A') }} Miles</h2>
                         <div class="tableBtnContainer">
                             <table class="tableContent">
                                 <tr>
                                     <td>ID</td>
                                     <td>Name</td>
-                                    <td>Address</td>
-                                    <td>Price</td>
+                                    <td>Street</td>
+                                    <td>Town</td>
+                                    <td>State</td>
+                                    <td>Zip-Code</td>
+                                    <td>Distance-hour</td>
+                                    <td>Distance-min</td>
                                     <td>Date</td>
-                                    <td>Due-Date</td>
-                                    <td>Paid-On</td>
-                                    <td>View</td>
+                                    <td>Miles</td>
                                     <td>DELETE</td>
                                 </tr>
                                 {% for mileage in all_mileage %}
-                                <tr>
-                                    <td>{{ mileage.id }}</td>
-                                    <td>{{ mileage.name }}</td>
-                                    <td>${{ mileage.street }}</td>
-                                    <td>{{ mileage.town }}</td>
-                                    <td>{{ mileage.state }}</td>
-                                    <td>{{ mileage.zip_code }}</td>
-                                    <td>{{ mileage.distance_hour }}</td>
-                                    <td>{{ mileage.distance_min }}</td>
-                                    <td>{{ mileage.date }}</td>
-                                    <td>{{ mileage.miles }}</td>
-                                <td><a class="delete widthBtn" href="{{ url_for('delete_data', id=1, field='mileage', data=mileage.id) }}">DELETE</a></td>  
-                                </tr>
+                                    <tr>
+                                        <td>{{ mileage.id }}</td>
+                                        <td>{{ mileage.name }}</td>
+                                        <td>${{ mileage.street }}</td>
+                                        <td>{{ mileage.town }}</td>
+                                        <td>{{ mileage.state }}</td>
+                                        <td>{{ mileage.zip_code }}</td>
+                                        <td>{{ mileage.distance_hour }}</td>
+                                        <td>{{ mileage.distance_min }}</td>
+                                        <td>{{ mileage.date }}</td>
+                                        <td>{{ mileage.miles }}</td>
+                                        <td><a class="delete widthBtn" href="{{ url_for('delete_data', id=1, field='mileage', data=mileage.id) }}">DELETE</a></td>  
+                                    </tr>
                         {% endfor %}
                             </table>              
                         </div>
@@ -324,7 +290,6 @@
                             {% endfor %}
                         </table>              
                     </div>
-            
             {% endif %}   
         </div>
     </div>
