@@ -291,6 +291,8 @@ def logged_in_only(f):
 @logged_in_only
 def home():
     facilities = DataBase.query.all()
+    today = datetime.now().replace(hour=23, minute=59, second=59)
+    current_year = today.year
     
     facilities = sorted(facilities, key=lambda x: x.facility)
 
@@ -383,13 +385,15 @@ def home():
 
     return render_template('index.html', facility_names=facility_names, facility_contacts=facility_contacts, 
                            length=length, facility_id=facility_id, facility_towns=facility_towns, bible_verse=bible_verse,
-                           town_check=town_check)
+                           town_check=town_check, current_year=current_year)
 
 
 @app.route('/form', methods=['GET', 'POST'])
 @logged_in_only
 def form():
     form = AddressBookForm()
+    today = datetime.now().replace(hour=23, minute=59, second=59)
+    current_year = today.year
 
     if request.method == 'POST':
 
@@ -616,7 +620,7 @@ def form():
 
         return redirect(url_for('facility_page', id=new_entry.id))
 
-    return render_template('form.html', form=form)
+    return render_template('form.html', form=form, current_year=current_year)
 
 
 @app.route('/facility/<int:id>', methods=['GET', 'POST'])
@@ -1425,7 +1429,11 @@ def previous_contact(id):
 @app.route('/delete/<int:id>/<field>/<data>', methods=['GET', 'POST'])
 @logged_in_only
 def delete_data(id, field, data):
-    facility = DataBase.query.filter_by(id=id).first()
+    try:
+        facility = DataBase.query.filter_by(id=id).first()
+    except:
+        pass
+    
     data = data
 
 
@@ -2136,4 +2144,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(port=5001, host="0.0.0.0")
+    app.run(port=5001, debug=True, host="0.0.0.0")

@@ -1,11 +1,10 @@
 {% include "header.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
 
 <body>
-    <h1 class="gigs editGigs">Edit Your Contact</h1>
-    <form method="POST" action="{{ url_for('add_title', id=id) }}">
-        {{ form.hidden_tag() }}
-        <div class="formContainerColumn">
+    <h1 class="gigs editGigs">Edit Your Contact</h1>  
+    <div class="formContainerColumn">
+        <form method="POST" action="{{ url_for('add_title', id=id) }}">
+            {{ form.hidden_tag() }}        
             <div class="returnContainer">
                 <a href="{{ url_for('invoice_form', id=id) }}">Return</a>
             </div>
@@ -21,8 +20,9 @@
                     <label class="leftItem">New Title:</label>
                     {{ form.title(class_='inputField') }}
                 </div>
-            {{ form.submit(class_='submitButton') }} 
-        </div> 
-    </form>
+                {{ form.submit(class_='submitButton') }} 
+            </div>
+        </form>
+    </div> 
 </body>
 </html>

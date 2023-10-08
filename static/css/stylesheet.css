@@ -10,6 +10,7 @@ html, body {
     font-family: 'Roboto', sans-serif;
 }
 
+
 .navBarContainer {
     width: 95%;
     margin: 10px;
@@ -23,6 +24,7 @@ html, body {
     justify-content: space-between;
     align-items: center;
     font-size: 30px;
+    transform: scale(.9);
 }
 
 .navBarContainer a {
@@ -32,6 +34,10 @@ html, body {
     padding: 10px;
     border-radius: 15px;
     display: flex;
+    height: 60px;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
 }
 
 .navBarContainer a:hover {
@@ -1105,9 +1111,7 @@ p {
 
 .barGraph:hover {
     transform: scale(2.4);
-    z-index: 5;
-    margin-right: -20px;
-    
+    z-index: 5;    
 }
 
 .rightAlign {
@@ -1141,6 +1145,25 @@ p {
     text-align: left;
 
     font-size: 22px;
+}
+
+.footer {
+    background-color: #E7D2CC;
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+    margin-top: 60px;
+    border-radius: 10px;
+    margin-bottom: 0px;
+}
+
+.footer p {
+    font-size: 16px;
+    margin: 10px;
+}
+
+footer {
+    margin-bottom: 0px;
 }
 
 @media only screen and (max-width: 1200px) {
@@ -1180,6 +1203,12 @@ p {
         transform: scale(.5);
         gap: 10px;
         width: 600px;
+        flex-direction: column;
+        margin: 0px;
+    }
+    
+    .rightNavItems {
+        flex-direction: column;
     }
 
     .navBarContainer a {
@@ -1256,5 +1285,9 @@ p {
     .formContainerColumn {
         transform: scale(.7);
         margin-top: -120px;
+    }
+
+    .tableBtnContainer {
+        transform: scale(.6);
     }
   }

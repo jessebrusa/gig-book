@@ -202,7 +202,7 @@
             {% endif %}
             {% if mileage_by_year %}
                     {% for year, all_mileage in mileage_by_year.items() %}
-                        <h2>Miles Drove {{ year }} | Total: {{ mileage_totals_by_year.get(year, 'N/A') }} Miles</h2>
+                        <h2>Miles Drove {{ year }} | Total: {{ mileage_totals_by_year.get(year, 'N/A') * 2 }} Miles</h2>
                         <div class="tableBtnContainer">
                             <table class="tableContent">
                                 <tr>
@@ -229,7 +229,7 @@
                                         <td>{{ mileage.distance_hour }}</td>
                                         <td>{{ mileage.distance_min }}</td>
                                         <td>{{ mileage.date }}</td>
-                                        <td>{{ mileage.miles }}</td>
+                                        <td>{{ mileage.miles * 2 }}</td>
                                         <td><a class="delete widthBtn" href="{{ url_for('delete_data', id=1, field='mileage', data=mileage.id) }}">DELETE</a></td>  
                                     </tr>
                         {% endfor %}
