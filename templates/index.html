@@ -1,12 +1,7 @@
 {% include "header.html" %}
 <body>
     <div class="indexContainer">
-        <div class="indexLeftContainer">
-            <h2><u>Bible Verse</u></h2>
-            <p class="bibleP">{{ bible_verse|safe }}</p>
-        </div>
-        <h1 class="gigs">Gigs</h1>
-
+        <h1 class="gigs">Contacts - Gigs</h1>
         <form method="POST" action="{{ url_for('home') }}">
         <div class="searchContainer">
             <div class="searchRadio">

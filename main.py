@@ -308,9 +308,6 @@ def home():
 
     facility_towns = [facility.town for facility in facilities]
 
-    response = requests.get(bible_url, params=params)
-    bible_verse = response.text
-
     town_check = None
 
 
@@ -384,7 +381,7 @@ def home():
 
 
     return render_template('index.html', facility_names=facility_names, facility_contacts=facility_contacts, 
-                           length=length, facility_id=facility_id, facility_towns=facility_towns, bible_verse=bible_verse,
+                           length=length, facility_id=facility_id, facility_towns=facility_towns,
                            town_check=town_check, current_year=current_year)
 
 
