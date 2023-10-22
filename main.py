@@ -708,7 +708,7 @@ def add_data(id, field):
 
 
 @app.route('/commit-add/<int:id>/<field>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def commit_add_data(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -879,7 +879,7 @@ def commit_add_data(id, field):
 
 
 @app.route('/add-pne-data/<string:field>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def add_pne_data(field):
     profit_form = AddProfitForm()
     sub_form = AddSubscriptionForm()
@@ -897,7 +897,7 @@ def add_pne_data(field):
 
 
 @app.route('/commit-add-pne-data/<string:field>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def commit_add_pne_data(field):
     profit_form = AddProfitForm()
     sub_form = AddSubscriptionForm()
@@ -1039,7 +1039,7 @@ def commit_add_pne_data(field):
 
 
 @app.route('/edit-field/<int:id>/<field>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def edit_field(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -1150,7 +1150,7 @@ def edit_field(id, field):
 
 
 @app.route('/commit-edit/<int:id>/<string:field>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def commit_edit(id, field):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -1309,7 +1309,7 @@ def commit_edit(id, field):
 
 
 @app.route('/wtformedit/<int:id>/<field>/<data>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def wtform_edit(id, field, data):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -1347,7 +1347,7 @@ def wtform_edit(id, field, data):
 
 
 @app.route('/wtformcommit/<int:id>/<field>/<data>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def wtform_commit(id, field, data):
     facility = DataBase.query.filter_by(id=id).first()
     form = AddressBookForm()
@@ -1408,7 +1408,7 @@ def wtform_commit(id, field, data):
 
 
 @app.route('/previous-contact-data/<int:id>')
-@logged_in_only
+# @logged_in_only
 def previous_contact(id):
     facility = DataBase.query.filter_by(id=id).first()
 
@@ -1424,7 +1424,7 @@ def previous_contact(id):
 
 
 @app.route('/delete/<int:id>/<field>/<data>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def delete_data(id, field, data):
     try:
         facility = DataBase.query.filter_by(id=id).first()
@@ -1602,7 +1602,7 @@ def confirm_page(id, field):
     return render_template('confirm.html', facility=facility, id=id, invoice=invoice)
 
 @app.route('/delete-contact/<int:id>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def delete_contact(id):
     facility = DataBase.query.filter_by(id=id).first()
 
@@ -1669,7 +1669,7 @@ def register_page():
 
 
 @app.route('/mass-email', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def mass_email_page():
     mass_email_form = MassEmailForm()
 
@@ -1705,7 +1705,7 @@ def mass_email_page():
 
 
 @app.route('/invoice-form/<int:id>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def invoice_form(id):
     facility = DataBase.query.filter_by(id=id).first()
     form = InvoiceForm()
@@ -1778,7 +1778,7 @@ def invoice_form(id):
 
 
 @app.route('/add-title/<int:id>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def add_title(id):
     form = AddTitleForm()
     titles = PerformanceTitle.query.all()
@@ -1800,7 +1800,7 @@ def add_title(id):
 
 
 @app.route('/invoice/<int:invoice_id>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def invoice(invoice_id):
     invoice = InvoiceTable.query.filter_by(id=invoice_id).first()
 
@@ -1808,7 +1808,7 @@ def invoice(invoice_id):
 
 
 @app.route('/invoice-list', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def invoice_list():
     invoice_items = invoices_by_year_total(InvoiceTable, OrderedDict)
 
@@ -1834,7 +1834,7 @@ def invoice_list():
 
 
 @app.route('/profit-expenses', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def profit_expenses():
     invoice_items = invoices_by_year_total(InvoiceTable, OrderedDict)
     this_year_paid_invoices = invoice_items[0]
@@ -2006,7 +2006,7 @@ def profit_expenses():
 
 
 @app.route('/view-pne/<string:field>', methods=['GET', 'POST'])
-@logged_in_only
+# @logged_in_only
 def view_pne(field):
     today = datetime.now().replace(hour=23, minute=59, second=59)
     current_year = today.year
